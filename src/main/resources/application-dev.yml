@@ -21,7 +21,7 @@ spring:
 #    host: localhost
     host: donot-redis2.mpt7r0.ng.0001.apn2.cache.amazonaws.com
     port: 6379
-    database: 0
+    database: 1
   jpa:
     database: postgresql
     database-platform: org.hibernate.dialect.PostgreSQLDialect
