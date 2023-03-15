@@ -23,6 +23,9 @@ public class RedisConfig {
 	@Value("${spring.redis.port}")
 	private int redisPort;
 
+	@Value("${spring.redis.database}")
+	private int redisDatabase;
+
 	@Bean
 	public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory connectionFactory) {
 		RedisTemplate<String, Object> redisTemplate = new RedisTemplate<>();
@@ -37,6 +40,7 @@ public class RedisConfig {
 		RedisStandaloneConfiguration configuration = new RedisStandaloneConfiguration();
 		configuration.setHostName(redisHost);
 		configuration.setPort(redisPort);
+		configuration.setDatabase(redisDatabase);
 		return new LettuceConnectionFactory(configuration);
 	}
 
