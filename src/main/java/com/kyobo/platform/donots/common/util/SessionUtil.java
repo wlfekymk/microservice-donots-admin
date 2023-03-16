@@ -27,7 +27,7 @@ public class SessionUtil {
         httpSession.setMaxInactiveInterval(MAX_INACTIVE_INTERVAL);
         HashMap<String, Object> sessionMap = (HashMap<String, Object>) sessionMapUncasted;
 
-        log.info("SessionUtil.validateAndGetSessionValue End");
+        log.info("SessionUtil.validateAndGetSessionValueAndExtendSessionInterval End");
         return sessionMap;
     }
 
