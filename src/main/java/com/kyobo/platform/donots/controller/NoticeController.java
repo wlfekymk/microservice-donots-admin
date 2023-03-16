@@ -1,6 +1,7 @@
 package com.kyobo.platform.donots.controller;
 
 import com.kyobo.platform.donots.common.exception.RequestBodyEmptyException;
+import com.kyobo.platform.donots.common.util.SessionUtil;
 import com.kyobo.platform.donots.model.dto.request.NoticeRequest;
 import com.kyobo.platform.donots.model.dto.response.NoticeListResponse;
 import com.kyobo.platform.donots.model.dto.response.NoticeResponse;
@@ -14,12 +15,14 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.DecoderException;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 import java.io.IOException;
 import java.net.URI;
@@ -34,6 +37,8 @@ public class NoticeController {
 
     private final NoticeService noticeService;
 
+    private final RedisTemplate<String, Object> redisTemplate;
+
     @PostMapping("/v1/notice/post")
     @Operation(summary = "공지사항 등록", description = "관리자 공지사항 게시판 등록")
     @ApiResponses(value = {
@@ -41,9 +46,15 @@ public class NoticeController {
             @ApiResponse(responseCode = "403", description = "권한이 없습니다."),
             @ApiResponse(responseCode = "500", description = "실패")
     })
-    public ResponseEntity noticeRegedit(@Valid NoticeRequest noticeRequest, MultipartFile multipartFile) throws IOException, DecoderException {
+    public ResponseEntity noticeRegedit(@Valid NoticeRequest noticeRequest, MultipartFile multipartFile, HttpSession httpSession) throws IOException, DecoderException {
 
-        Long result = noticeService.noticeRegedit(noticeRequest, multipartFile);
+
+        HashMap<String, Object> sessionMap = SessionUtil.validateAndGetSessionValueAndExtendSessionInterval(httpSession);
+        String adminIdFromSession = sessionMap.get("adminId").toString();
+        String adminUserKeyFromSession = sessionMap.get("id").toString();
+        SessionUtil.extendGlobalCustomSessionInterval(redisTemplate, adminUserKeyFromSession);
+
+        Long result = noticeService.noticeRegedit(noticeRequest, adminIdFromSession, multipartFile);
         URI location = ServletUriComponentsBuilder.fromCurrentRequest()
                 .path("/{key}")
                 .buildAndExpand(result)

@@ -52,8 +52,8 @@ public class NoticeService {
     }
 
     @Transactional
-    public Long noticeRegedit(NoticeRequest noticeRequest, MultipartFile multipartFile) throws DecoderException, IOException {
-        NoticePost foundNoticePost = noticePostRepository.save(noticePostRegedit(noticeRequest));
+    public Long noticeRegedit(NoticeRequest noticeRequest, String adminId, MultipartFile multipartFile) throws DecoderException, IOException {
+        NoticePost foundNoticePost = noticePostRepository.save(noticePostRegedit(noticeRequest, adminId));
 
         // FIXME [TEST] S3 연동 후 주석 제거 및 이미지 업로드, 삭제 테스트
         if (multipartFile != null) {    // 첨부된 파일이 있으면 업로드
@@ -138,15 +138,14 @@ public class NoticeService {
         }
     }
 
-    private NoticePost noticePostRegedit(NoticeRequest noticeRequest){
+    private NoticePost noticePostRegedit(NoticeRequest noticeRequest, String adminId){
         LocalDateTime now = LocalDateTime.now();
         NoticePost noticePost = NoticePost.builder()
                 .title(noticeRequest.getTitle())
                 .body(noticeRequest.getBody())
                 .boardStartDate(noticeRequest.getBoardStartDate())
                 .boardEndDate(noticeRequest.getBoardEndDate())
-                // TODO [Session] 세션에서 ID 가져와서 저장
-                .adminId("dummyAdminId")
+                .adminId(adminId)
                 .createdDate(now)
                 .lastModifiedDate(now)
                 .build();

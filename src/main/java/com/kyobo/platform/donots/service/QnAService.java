@@ -5,7 +5,6 @@ import com.kyobo.platform.donots.model.dto.request.QnAListRequest;
 import com.kyobo.platform.donots.model.dto.request.QnAUpdateRequest;
 import com.kyobo.platform.donots.model.dto.response.QnAListResponse;
 import com.kyobo.platform.donots.model.dto.response.QnAResponse;
-import com.kyobo.platform.donots.model.entity.AdminUser;
 import com.kyobo.platform.donots.model.entity.QnA;
 import com.kyobo.platform.donots.model.repository.QnARepository;
 import lombok.RequiredArgsConstructor;
@@ -56,12 +55,12 @@ public class QnAService {
         return new QnAListResponse(qnAListResponseList, qnaPage.getTotalPages(), qnaPage.getTotalElements());
     }
 
-    public void qnAUpdate(QnAUpdateRequest qnAUpdateRequest, AdminUser myAdminUser) {
+    public void qnAUpdate(QnAUpdateRequest qnAUpdateRequest, String adminId) {
         QnA qna = qnARepository.findById(qnAUpdateRequest.getKey()).get();
         if (qna == null) {
             throw new DataNotFoundException();
         }
-        qna.updateQnA(qnAUpdateRequest, myAdminUser.getAdminId());
+        qna.updateQnA(qnAUpdateRequest, adminId);
     }
 
     private LocalDateTime convertStringForLocalDateTime(String time) {

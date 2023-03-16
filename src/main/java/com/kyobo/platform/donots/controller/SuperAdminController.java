@@ -5,8 +5,6 @@ import com.kyobo.platform.donots.model.dto.request.CreateAdminUserRequest;
 import com.kyobo.platform.donots.model.dto.request.ModifyAdminUserRequest;
 import com.kyobo.platform.donots.model.dto.response.AdminUserListResponse;
 import com.kyobo.platform.donots.model.dto.response.AdminUserResponse;
-
-import com.kyobo.platform.donots.model.entity.AdminUser;
 import com.kyobo.platform.donots.service.LoginService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -41,9 +39,7 @@ public class SuperAdminController {
             @ApiResponse(responseCode = "4000", description = "파라메터 인자값이 정상적이지 않습니다.")
     })
     public ResponseEntity createAdminUser(@RequestBody @Valid CreateAdminUserRequest createAdminUserRequest, HttpSession httpSession) {
-        AdminUser myAdminUser = (AdminUser) httpSession.getAttribute("adminUser");
-
-        AdminUserResponse adminUserResponse = loginService.createAdminUser(createAdminUserRequest, myAdminUser);
+        AdminUserResponse adminUserResponse = loginService.createAdminUser(createAdminUserRequest, httpSession);
         return new ResponseEntity(adminUserResponse, HttpStatus.CREATED);
     }
 

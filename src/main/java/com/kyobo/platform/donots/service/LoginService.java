@@ -1,17 +1,20 @@
 package com.kyobo.platform.donots.service;
 
-import com.kyobo.platform.donots.common.exception.*;
-
+import com.kyobo.platform.donots.common.exception.AdminUserNotFoundException;
+import com.kyobo.platform.donots.common.exception.AlreadyRegisteredIdException;
+import com.kyobo.platform.donots.common.exception.PasswordIncludePersonalInformation;
+import com.kyobo.platform.donots.common.exception.PasswordNotMatchException;
+import com.kyobo.platform.donots.common.util.SessionUtil;
 import com.kyobo.platform.donots.model.dto.request.*;
-import com.kyobo.platform.donots.model.dto.response.*;
+import com.kyobo.platform.donots.model.dto.response.AdminUserListResponse;
+import com.kyobo.platform.donots.model.dto.response.AdminUserResponse;
 import com.kyobo.platform.donots.model.entity.AdminUser;
-import com.kyobo.platform.donots.model.entity.service.account.RoleType;
 import com.kyobo.platform.donots.model.repository.AdminUserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -21,10 +24,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpSession;
-
 import java.time.LocalDateTime;
 import java.util.HashMap;
-
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -34,9 +35,11 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Slf4j
 public class LoginService implements UserDetailsService {
+
     private final AdminUserRepository adminUserRepository;
     private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
-    private final HttpSession httpSession;
+
+    private final RedisTemplate<String, Object> redisTemplate;
 
     @PostConstruct
     public void initialize(){
@@ -64,7 +67,12 @@ public class LoginService implements UserDetailsService {
             adminUserRepository.save(adminUser);
         }
     }
-    public AdminUserResponse createAdminUser(CreateAdminUserRequest createAdminUserRequest, AdminUser myAdminUser) {
+    public AdminUserResponse createAdminUser(CreateAdminUserRequest createAdminUserRequest, HttpSession httpSession) {
+
+        HashMap<String, Object> sessionMap = SessionUtil.validateAndGetSessionValueAndExtendSessionInterval(httpSession);
+        String adminIdFromSession = sessionMap.get("adminId").toString();
+        String adminUserKeyFromSession = sessionMap.get("id").toString();
+        SessionUtil.extendGlobalCustomSessionInterval(redisTemplate, adminUserKeyFromSession);
 
         AdminUser adminUser = adminUserRepository.findByAdminId(createAdminUserRequest.getAdminId());
 
@@ -79,7 +87,7 @@ public class LoginService implements UserDetailsService {
                 .adminUserNumber(createAdminUserRequest.getAdminUserNumber())
                 .departmentName(createAdminUserRequest.getDepartmentName())
                 .phoneNumber(createAdminUserRequest.getPhoneNumber())
-                .regeditAdminId(myAdminUser.getAdminId())
+                .regeditAdminId(adminIdFromSession)
                 .email(createAdminUserRequest.getEmail())
                 .reasonsForAuthorization(createAdminUserRequest.getReasonsForAuthorization())
                 .role(createAdminUserRequest.getRole())
@@ -91,8 +99,6 @@ public class LoginService implements UserDetailsService {
                 .lastSignInDate(now)
                 .build();
         adminUserRepository.save(adminUser);
-
-        //httpSession.setAttribute();
 
         return new AdminUserResponse(adminUser);
     }
@@ -137,7 +143,7 @@ public class LoginService implements UserDetailsService {
 
 
     @Transactional
-    public AdminUserResponse signIn(SignInRequest signInRequest) {
+    public AdminUserResponse signIn(SignInRequest signInRequest, HttpSession httpSession) {
         AdminUser adminUser = adminUserRepository.findByAdminId(signInRequest.getAdminId());
         if(adminUser == null)
             throw new AdminUserNotFoundException();
@@ -145,7 +151,8 @@ public class LoginService implements UserDetailsService {
             throw new PasswordNotMatchException();
         adminUser.increaseCount(adminUser.getLoginCount());
         adminUser.updateSessionId(adminUser.getSessionId());
-        httpSession.setAttribute("adminUser", adminUser);
+
+        SessionUtil.populateLocalSessionAndGlobalCustomSession(httpSession, redisTemplate, adminUser);
 
         return new AdminUserResponse(adminUser);
     }
