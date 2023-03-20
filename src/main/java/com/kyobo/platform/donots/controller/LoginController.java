@@ -15,7 +15,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 
 @Slf4j
@@ -47,9 +46,9 @@ public class LoginController {
             @ApiResponse(responseCode = "4002", description = "조회된 어드민 유저가 없습니다"),
             @ApiResponse(responseCode = "5000", description = "패스워드가 맞지 않습니다")
     })
-    public ResponseEntity signIn(@RequestBody @Valid SignInRequest signInRequest, HttpSession httpSession) {
+    public ResponseEntity signIn(@RequestBody @Valid SignInRequest signInRequest) {
 
-        AdminUserResponse result = loginService.signIn(signInRequest, httpSession);
+        AdminUserResponse result = loginService.signIn(signInRequest);
         return new ResponseEntity(result, HttpStatus.OK);
     }
 

@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import javax.servlet.http.HttpSession;
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.io.IOException;
 import java.net.URI;
@@ -46,13 +46,10 @@ public class NoticeController {
             @ApiResponse(responseCode = "403", description = "권한이 없습니다."),
             @ApiResponse(responseCode = "500", description = "실패")
     })
-    public ResponseEntity noticeRegedit(@Valid NoticeRequest noticeRequest, MultipartFile multipartFile, HttpSession httpSession) throws IOException, DecoderException {
+    public ResponseEntity noticeRegedit(@Valid NoticeRequest noticeRequest, MultipartFile multipartFile, HttpServletRequest httpServletRequest) throws IOException, DecoderException {
 
-
-        HashMap<String, Object> sessionMap = SessionUtil.validateAndGetSessionValueAndExtendSessionInterval(httpSession);
+        HashMap<String, Object> sessionMap = SessionUtil.getGlobalCustomSessionValue(httpServletRequest, redisTemplate);
         String adminIdFromSession = sessionMap.get("adminId").toString();
-        String adminUserKeyFromSession = sessionMap.get("id").toString();
-        SessionUtil.extendGlobalCustomSessionInterval(redisTemplate, adminUserKeyFromSession);
 
         Long result = noticeService.noticeRegedit(noticeRequest, adminIdFromSession, multipartFile);
         URI location = ServletUriComponentsBuilder.fromCurrentRequest()
@@ -70,7 +67,9 @@ public class NoticeController {
             @ApiResponse(responseCode = "403", description = "권한이 없습니다."),
             @ApiResponse(responseCode = "500", description = "실패")
     })
-    public ResponseEntity deleteNotice(@PathVariable("noticePostKey") Long noticePostKey) throws IOException {
+    public ResponseEntity deleteNotice(@PathVariable("noticePostKey") Long noticePostKey, HttpServletRequest httpServletRequest) throws IOException {
+
+        // TODO 작성자와 삭제자가 일치하는지 비교 필요
         noticeService.deleteNotice(noticePostKey);
         return ResponseEntity.ok().build();
     }
@@ -83,6 +82,8 @@ public class NoticeController {
             @ApiResponse(responseCode = "500", description = "실패")
     })
     public ResponseEntity updateNotice(@PathVariable("noticePostKey") Long noticePostKey, NoticeRequest noticeRequest, MultipartFile multipartFile) throws DecoderException, IOException {
+
+        // TODO 작성자와 삭제자가 일치하는지 비교 필요
         noticeService.updateNotice(noticePostKey, noticeRequest, multipartFile);
         return ResponseEntity.ok().build();
     }
@@ -107,7 +108,6 @@ public class NoticeController {
                     content = @Content(schema = @Schema(implementation = NoticeListResponse.class))),
     })
     public ResponseEntity findNoticePostsFiltered(@RequestParam(required = false) String searchTerm, final Pageable pageable) {
-        log.info("NoticeController.getNoticeList()");
 
         NoticeListResponse response = noticeService.findNoticePostsFiltered(searchTerm, pageable);
 
@@ -122,6 +122,7 @@ public class NoticeController {
             @ApiResponse(responseCode = "404", description = "Not Found")
     })
     public ResponseEntity<?> uploadNoticeImageToS3AndUpdateUrl(@PathVariable Long key, @RequestBody MultipartFile multipartFile) throws IOException, DecoderException {
+        // TODO 작성자와 삭제자가 일치하는지 비교 필요
         if (multipartFile == null)
             throw new RequestBodyEmptyException();
 
@@ -140,6 +141,7 @@ public class NoticeController {
             @ApiResponse(responseCode = "404", description = "Not Found")
     })
     public ResponseEntity<?> deleteNoticeImageFromS3AndUpdateUrl(@PathVariable Long key) throws IOException, DecoderException {
+        // TODO 작성자와 삭제자가 일치하는지 비교 필요
         noticeService.deleteNoticeImageFromS3AndUpdateUrl(key);
         return ResponseEntity.ok().build();
     }

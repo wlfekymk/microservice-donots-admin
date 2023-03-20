@@ -18,7 +18,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpSession;
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.util.Map;
 
@@ -38,8 +38,8 @@ public class SuperAdminController {
             @ApiResponse(responseCode = "1000", description = "이미 가입된 아이디입니다."),
             @ApiResponse(responseCode = "4000", description = "파라메터 인자값이 정상적이지 않습니다.")
     })
-    public ResponseEntity createAdminUser(@RequestBody @Valid CreateAdminUserRequest createAdminUserRequest, HttpSession httpSession) {
-        AdminUserResponse adminUserResponse = loginService.createAdminUser(createAdminUserRequest, httpSession);
+    public ResponseEntity createAdminUser(@RequestBody @Valid CreateAdminUserRequest createAdminUserRequest, HttpServletRequest httpServletRequest) {
+        AdminUserResponse adminUserResponse = loginService.createAdminUser(createAdminUserRequest, httpServletRequest);
         return new ResponseEntity(adminUserResponse, HttpStatus.CREATED);
     }
 

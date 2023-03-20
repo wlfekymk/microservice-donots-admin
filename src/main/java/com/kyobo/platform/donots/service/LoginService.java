@@ -23,6 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.PostConstruct;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -67,12 +68,10 @@ public class LoginService implements UserDetailsService {
             adminUserRepository.save(adminUser);
         }
     }
-    public AdminUserResponse createAdminUser(CreateAdminUserRequest createAdminUserRequest, HttpSession httpSession) {
+    public AdminUserResponse createAdminUser(CreateAdminUserRequest createAdminUserRequest, HttpServletRequest httpServletRequest) {
 
-        HashMap<String, Object> sessionMap = SessionUtil.validateAndGetSessionValueAndExtendSessionInterval(httpSession);
+        HashMap<String, Object> sessionMap = SessionUtil.getGlobalCustomSessionValue(httpServletRequest, redisTemplate);
         String adminIdFromSession = sessionMap.get("adminId").toString();
-        String adminUserKeyFromSession = sessionMap.get("id").toString();
-        SessionUtil.extendGlobalCustomSessionInterval(redisTemplate, adminUserKeyFromSession);
 
         AdminUser adminUser = adminUserRepository.findByAdminId(createAdminUserRequest.getAdminId());
 
@@ -143,7 +142,7 @@ public class LoginService implements UserDetailsService {
 
 
     @Transactional
-    public AdminUserResponse signIn(SignInRequest signInRequest, HttpSession httpSession) {
+    public AdminUserResponse signIn(SignInRequest signInRequest) {
         AdminUser adminUser = adminUserRepository.findByAdminId(signInRequest.getAdminId());
         if(adminUser == null)
             throw new AdminUserNotFoundException();
@@ -152,7 +151,7 @@ public class LoginService implements UserDetailsService {
         adminUser.increaseCount(adminUser.getLoginCount());
         adminUser.updateSessionId(adminUser.getSessionId());
 
-        SessionUtil.populateLocalSessionAndGlobalCustomSession(httpSession, redisTemplate, adminUser);
+        SessionUtil.populateGlobalCustomSession(redisTemplate, adminUser);
 
         return new AdminUserResponse(adminUser);
     }
