@@ -34,7 +34,8 @@ public class LoggerAspect {
 
             String controllerName = proceedingJoinPoint.getSignature().getDeclaringType().getSimpleName();
             String methodName = proceedingJoinPoint.getSignature().getName();
-
+            Object[] signatureArgs = proceedingJoinPoint.getArgs();
+            String sessionId = (String) signatureArgs[0];
             Map<String, Object> params = new HashMap<>();
 
             try {
@@ -44,10 +45,13 @@ public class LoggerAspect {
                 params.put("log_time", new Date());
                 params.put("request_uri", request.getRequestURI());
                 params.put("http_method", request.getMethod());
+                params.put("sessionId", sessionId);
             } catch (Exception e) {
                 log.error("logAspect error", e);
             }
-            log.info("params : {}", params);
+
+            if(!methodName.equals("redirect"))
+                log.info("params : {}", params);
 
             return result;
 
