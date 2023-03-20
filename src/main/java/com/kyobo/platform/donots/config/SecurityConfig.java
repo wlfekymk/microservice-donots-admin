@@ -32,8 +32,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     public void configure(HttpSecurity http) throws Exception {
-
-        http.csrf().disable();
         http.cors().configurationSource(request -> {
             var cors = new CorsConfiguration();
             cors.setAllowedOrigins(List.of("*"));
@@ -41,24 +39,19 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             cors.setAllowedHeaders(List.of("*"));
             return cors;
         });
+        http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED);
+        http.csrf().disable();
+        http.formLogin().disable();
         http.authorizeRequests()
                 .antMatchers("/").permitAll()
+                .antMatchers("/noAuth/*").permitAll()
                 .antMatchers("/super/admin", "/admin").hasRole("SUPER_ADMIN")
                 .antMatchers("/admin").hasRole("ADMIN")
                 .antMatchers("/login/*").permitAll()
                 .antMatchers("/super/admin").permitAll();
-        http.formLogin(login -> login.loginPage("/login")
-                        .loginProcessingUrl("loginProcess").permitAll()
-                        .defaultSuccessUrl("/", false)
-                        .failureUrl("/login-error")
-        );
-        http.logout(logout -> logout.logoutSuccessUrl("/"));
-        http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
         http.exceptionHandling()
                 .accessDeniedPage("/accessDenied");
-
 //        http.addFilterBefore(tokenAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
-
     }
 
     @Override
