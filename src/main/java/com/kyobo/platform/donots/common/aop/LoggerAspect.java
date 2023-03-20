@@ -50,8 +50,7 @@ public class LoggerAspect {
                 log.error("logAspect error", e);
             }
 
-            if(!methodName.equals("redirect"))
-                log.info("params : {}", params);
+            log.info("params : {}", params);
 
             return result;
 
