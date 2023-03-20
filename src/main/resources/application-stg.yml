@@ -1,9 +1,6 @@
 server:
   port : 9090
 spring :
-  profiles:
-    active:
-      -stg
   datasource:
     driver-class-name: org.postgresql.Driver
     url: jdbc:postgresql://localhost:5432/recipe_account
