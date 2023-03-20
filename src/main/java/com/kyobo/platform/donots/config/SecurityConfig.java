@@ -9,6 +9,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.annotation.web.configurers.SessionManagementConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.cors.CorsConfiguration;
 
@@ -43,20 +44,20 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         http.authorizeRequests()
                 .antMatchers("/").permitAll()
                 .antMatchers("/super/admin", "/admin").hasRole("SUPER_ADMIN")
-                .antMatchers("/admin").hasRole("ADMIN");
+                .antMatchers("/admin").hasRole("ADMIN")
+                .antMatchers("/login/*").permitAll()
+                .antMatchers("/super/admin").permitAll();
         http.formLogin(login -> login.loginPage("/login")
                         .loginProcessingUrl("loginProcess").permitAll()
                         .defaultSuccessUrl("/", false)
                         .failureUrl("/login-error")
         );
         http.logout(logout -> logout.logoutSuccessUrl("/"));
-        http.sessionManagement(s-> s.sessionFixation(SessionManagementConfigurer.SessionFixationConfigurer::changeSessionId)
-                        .maximumSessions(1)
-                        .maxSessionsPreventsLogin(false)
-                        .expiredUrl("/")
-        );
+        http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
         http.exceptionHandling()
                 .accessDeniedPage("/accessDenied");
+
+//        http.addFilterBefore(tokenAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
 
     }
 
