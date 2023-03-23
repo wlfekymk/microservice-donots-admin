@@ -42,7 +42,7 @@ public class Baby {
      * - 정상적으로 직렬화 수행
      */
     @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST})
-    @JoinColumn(name = "parent_key")
+    @JoinColumn(name = "parent_key", foreignKey = @ForeignKey(name = "fk_baby_parent_key"))
     @JsonBackReference // TODO Member 프로젝트와 다른 부분
     private Parent parent;
 
