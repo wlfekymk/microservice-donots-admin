@@ -20,9 +20,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpSession;
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
-import java.util.HashMap;
 
 
 @Controller
@@ -39,11 +38,9 @@ public class QnAController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "성공")
     })
-    public ResponseEntity<?> qnAUpdate(@RequestBody @Valid QnAUpdateRequest qnAUpdateRequest, HttpSession httpSession)  {
-        HashMap<String, Object> sessionMap = SessionUtil.validateAndGetSessionValueAndExtendSessionInterval(httpSession);
-        String adminIdFromSession = sessionMap.get("adminId").toString();
-        String adminUserKeyFromSession = sessionMap.get("id").toString();
-        SessionUtil.extendGlobalCustomSessionInterval(redisTemplate, adminUserKeyFromSession);
+    public ResponseEntity<?> qnAUpdate(@RequestBody @Valid QnAUpdateRequest qnAUpdateRequest, HttpServletRequest httpServletRequest)  {
+
+        String adminIdFromSession = SessionUtil.getGlobalCustomSessionStringAttribute("adminId", httpServletRequest, redisTemplate);
 
         qnAService.qnAUpdate(qnAUpdateRequest, adminIdFromSession);
         return ResponseEntity.ok().build();

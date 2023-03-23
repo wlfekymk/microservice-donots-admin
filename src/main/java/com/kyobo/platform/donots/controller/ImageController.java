@@ -32,6 +32,7 @@ public class ImageController {
             @ApiResponse(responseCode = "404", description = "Not Found")
     })
     public ResponseEntity<?> deleteAdminImage(@PathVariable String adminId) throws IOException, DecoderException {
+        // TODO 작성자가 수퍼관리자인지 권한확인 필요
         s3ImageService.deleteAdminImage(adminId);
         return ResponseEntity.ok().build();
     }
@@ -45,6 +46,7 @@ public class ImageController {
     public ResponseEntity<?> uploadAdminImage(@PathVariable String adminId, @RequestBody MultipartFile multipartFile) throws IOException, DecoderException {
         if (multipartFile == null)
             throw new RequestBodyEmptyException();
+        // TODO 작성자가 수퍼관리자인지 권한확인 필요
         String attachImageUrl = s3ImageService.uploadAdminImage(adminId, multipartFile);
         Map<String, String> result = new HashMap<>();
         result.put("attachImageUrl", attachImageUrl);

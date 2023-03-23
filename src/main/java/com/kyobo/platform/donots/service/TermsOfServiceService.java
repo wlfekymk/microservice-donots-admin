@@ -25,14 +25,13 @@ public class TermsOfServiceService {
     private final EntityManager em;
 
     @Transactional
-    public Long postTermsOfService(TermsOfServiceRequest termsOfServiceRequest) {
+    public Long postTermsOfService(TermsOfServiceRequest termsOfServiceRequest, String adminId) {
         LocalDateTime now = LocalDateTime.now();
         TermsOfService termsOfService = TermsOfService.builder()
                 .title(termsOfServiceRequest.getTitle())
                 .body(termsOfServiceRequest.getBody())
                 .version(termsOfServiceRequest.getVersion())
-                // TODO [Session] 세션 처리 필요
-                .adminId("dummyAdminId")
+                .adminId(adminId)
                 .bodyHtmlFileUrl(termsOfServiceRequest.getBodyHtmlFileUrl())
                 .postingStartDatetime(termsOfServiceRequest.getPostingStartDatetime())
                 .postingEndDatetime(termsOfServiceRequest.getPostingEndDatetime())

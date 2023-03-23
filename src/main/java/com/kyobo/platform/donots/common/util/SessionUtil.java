@@ -136,4 +136,30 @@ public class SessionUtil {
         log.info("SessionUtil.getGlobalCustomSessionValue End");
         return sessionMap;
     }
+
+    public static Long getGlobalCustomSessionLongAttribute(String attributeName, HttpServletRequest request, RedisTemplate<String, Object> redisTemplate) {
+        log.info("SessionUtil.getGlobalCustomSessionLongAttribute Start");
+
+        String sessionKey = request.getHeader("sessionKey");
+
+        ValueOperations<String, Object> operations = redisTemplate.opsForValue();
+        HashMap<String, Object> sessionMap = (HashMap<String, Object>) operations.get(sessionKey);
+        Long attributeValue = Long.parseLong(sessionMap.get(attributeName).toString());
+
+        log.info("SessionUtil.getGlobalCustomSessionLongAttribute End");
+        return attributeValue;
+    }
+
+    public static String getGlobalCustomSessionStringAttribute(String attributeName, HttpServletRequest request, RedisTemplate<String, Object> redisTemplate) {
+        log.info("SessionUtil.getGlobalCustomSessionStringAttribute Start");
+
+        String sessionKey = request.getHeader("sessionKey");
+
+        ValueOperations<String, Object> operations = redisTemplate.opsForValue();
+        HashMap<String, Object> sessionMap = (HashMap<String, Object>) operations.get(sessionKey);
+        String attributeValue = sessionMap.get(attributeName).toString();
+
+        log.info("SessionUtil.getGlobalCustomSessionStringAttribute End");
+        return attributeValue;
+    }
 }

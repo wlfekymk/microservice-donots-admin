@@ -48,8 +48,7 @@ public class NoticeController {
     })
     public ResponseEntity noticeRegedit(@Valid NoticeRequest noticeRequest, MultipartFile multipartFile, HttpServletRequest httpServletRequest) throws IOException, DecoderException {
 
-        HashMap<String, Object> sessionMap = SessionUtil.getGlobalCustomSessionValue(httpServletRequest, redisTemplate);
-        String adminIdFromSession = sessionMap.get("adminId").toString();
+        String adminIdFromSession = SessionUtil.getGlobalCustomSessionStringAttribute("adminId", httpServletRequest, redisTemplate);
 
         Long result = noticeService.noticeRegedit(noticeRequest, adminIdFromSession, multipartFile);
         URI location = ServletUriComponentsBuilder.fromCurrentRequest()

@@ -103,13 +103,13 @@ public class LoginService implements UserDetailsService {
     }
 
     @Transactional
-    public void changePasswordRequest(ChangePasswordRequest changePasswordRequest) {
-        AdminUser adminUser = adminUserRepository.findByAdminId(changePasswordRequest.getAdminId());
+    public void changePasswordRequest(ChangePasswordRequest changePasswordRequest, String adminId) {
+        AdminUser adminUser = adminUserRepository.findByAdminId(adminId);
         if(adminUser == null)
             throw new AdminUserNotFoundException();
         if(!encoder.matches(changePasswordRequest.getPassword(), adminUser.getPassword()))
             throw new PasswordNotMatchException();
-        if(changePasswordRequest.getNewPassword().contains(changePasswordRequest.getAdminId()))
+        if(changePasswordRequest.getNewPassword().contains(adminId))
             throw new PasswordIncludePersonalInformation();
         if(changePasswordRequest.getNewPassword().contains(adminUser.getPhoneNumber()))
             throw new PasswordIncludePersonalInformation();

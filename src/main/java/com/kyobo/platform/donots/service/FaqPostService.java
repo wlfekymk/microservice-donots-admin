@@ -52,14 +52,13 @@ public class FaqPostService {
     }
 
     @Transactional
-    public Long registerFaqPost(FaqPostRequest faqPostRequest, MultipartFile multipartFile) throws DecoderException, IOException {
+    public Long registerFaqPost(FaqPostRequest faqPostRequest, String adminId, MultipartFile multipartFile) throws DecoderException, IOException {
         LocalDateTime now = LocalDateTime.now();
         FaqPost faqPost = FaqPost.builder()
                 .faqCategory(faqPostRequest.getFaqCategory())
                 .question(faqPostRequest.getQuestion())
                 .answer(faqPostRequest.getAnswer())
-                // TODO [Session] 세션 연동 필요
-                .adminId("dummyAdminId")
+                .adminId(adminId)
                 .boardStartDatetime(faqPostRequest.getBoardStartDatetime())
                 .boardEndDatetime(faqPostRequest.getBoardEndDatetime())
                 .createdDatetime(now)

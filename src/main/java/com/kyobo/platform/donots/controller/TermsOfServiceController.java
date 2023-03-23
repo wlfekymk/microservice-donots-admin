@@ -1,5 +1,6 @@
 package com.kyobo.platform.donots.controller;
 
+import com.kyobo.platform.donots.common.util.SessionUtil;
 import com.kyobo.platform.donots.model.dto.request.TermsOfServiceRequest;
 import com.kyobo.platform.donots.model.dto.response.TermsOfServiceListResponse;
 import com.kyobo.platform.donots.model.dto.response.TermsOfServiceResponse;
@@ -11,11 +12,13 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.net.URI;
 
@@ -26,6 +29,8 @@ public class TermsOfServiceController {
 
     private final TermsOfServiceService termsOfServiceService;
 
+    private final RedisTemplate<String, Object> redisTemplate;
+
     @PostMapping("/v1/terms-of-services")
     @Operation(summary = "서비스약관 > 게시", description = "")
     @ApiResponses(value = {
@@ -33,8 +38,11 @@ public class TermsOfServiceController {
             @ApiResponse(responseCode = "403", description = "권한이 없습니다."),
             @ApiResponse(responseCode = "500", description = "실패")
     })
-    public ResponseEntity postTermsOfService(@RequestBody @Valid TermsOfServiceRequest termsOfServiceRequest) {
-        Long foundTermsOfServiceKey = termsOfServiceService.postTermsOfService(termsOfServiceRequest);
+    public ResponseEntity postTermsOfService(@RequestBody @Valid TermsOfServiceRequest termsOfServiceRequest, HttpServletRequest httpServletRequest) {
+
+        String adminIdFromSession = SessionUtil.getGlobalCustomSessionStringAttribute("adminId", httpServletRequest, redisTemplate);
+
+        Long foundTermsOfServiceKey = termsOfServiceService.postTermsOfService(termsOfServiceRequest, adminIdFromSession);
 
         URI location = ServletUriComponentsBuilder.fromCurrentRequest()
                 .path("/{key}")
