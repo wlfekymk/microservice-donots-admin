@@ -83,7 +83,6 @@ public class Parent {
     @Builder.Default private Integer scrapbookedCount = 0;                      // 스크랩된수
     @Builder.Default private Integer reactionAddingCount = 0;                   // 반응한수
     @Builder.Default private Integer scrapbookingCount = 0;                     // 스크랩한수
-    @Builder.Default private Integer todaysMemberRanking = Integer.MAX_VALUE;   // 오늘의 회원 순위
     private LocalDateTime lastActivityIndicatorAggregatedDatetime;              // 마지막 활동지표 집계시각
 
     // 마케팅 동의 및 알림방식 => 계정영역에서 처리함
