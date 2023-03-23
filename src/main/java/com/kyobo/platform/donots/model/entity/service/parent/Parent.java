@@ -37,6 +37,9 @@ public class Parent {
     private ParentGrade grade;
 //    @Transient private ActivityIndicator activityIndicator;
 
+    // 등급변경 일시
+    private LocalDateTime gradeChangeDatetime;
+
     // Internet Explorer에서 입력 가능한 최대 URL 길이. (GET Method 사용)
     // 다른 브라우저는 이것보다 더 길기 때문에 가장 짧은 Internet Explorer를 기준으로 했다.
     @Column(length = 2048)
