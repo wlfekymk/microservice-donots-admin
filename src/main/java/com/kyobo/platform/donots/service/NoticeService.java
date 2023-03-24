@@ -1,5 +1,6 @@
 package com.kyobo.platform.donots.service;
 
+import com.kyobo.platform.donots.common.exception.BusinessException;
 import com.kyobo.platform.donots.common.exception.DataNotFoundException;
 import com.kyobo.platform.donots.common.exception.DefaultException;
 import com.kyobo.platform.donots.common.util.S3FileUploadUtil;
@@ -9,10 +10,10 @@ import com.kyobo.platform.donots.model.dto.response.NoticeListResponse;
 import com.kyobo.platform.donots.model.dto.response.NoticeResponse;
 import com.kyobo.platform.donots.model.entity.NoticePost;
 import com.kyobo.platform.donots.model.repository.NoticePostRepository;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.DecoderException;
 import org.json.simple.JSONObject;
+import org.springframework.core.env.Environment;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
@@ -32,19 +33,39 @@ import java.util.Properties;
 import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
 @Slf4j
 public class NoticeService {
-    private final NoticePostRepository noticePostRepository;
-    private final S3FileUploadUtil s3FileUploadUtil;
 
-    // TODO 임시
-//    @Value("${spring.profiles.active}")
-    String env_active = "dev";
+    private NoticePostRepository noticePostRepository;
+    private S3FileUploadUtil s3FileUploadUtil;
+
+    private String recipeUrl;
+
+    private Environment environment;
+
+    public NoticeService(NoticePostRepository noticePostRepository, S3FileUploadUtil s3FileUploadUtil, Environment environment) throws IOException {
+        this.noticePostRepository = noticePostRepository;
+        this.s3FileUploadUtil = s3FileUploadUtil;
+
+        this.environment = environment;
+        recipeUrl = loadProperty().getProperty("recipeurl");
+    }
 
     public Properties loadProperty() throws IOException {
+        log.info("S3FileUploadUtil.loadProperty");
+
+        if (environment == null)
+            throw new BusinessException("S3FileUploadUtil.environment field is failed to be injected. (의존성 주입 실패)");
+
+        String profileToUseProperties;
+        if (environment.getActiveProfiles().length == 0)
+            profileToUseProperties = "dev";  // Active Profile이 없을 경우(default일 경우) 개발계 구성을 사용한다. 추후 로컬 구성파일이 별도로 필요할 경우 변경한다.
+        else
+            profileToUseProperties = environment.getActiveProfiles()[0];
+
         Properties properties = new Properties();
-        Resource newResource = new ClassPathResource("awsAuth-" + env_active + ".properties");
+        Resource newResource = new ClassPathResource("awsAuth-" + profileToUseProperties + ".properties");
+        log.info("Currently using [awsAuth-{}.properties]", profileToUseProperties);
         BufferedReader br = new BufferedReader(new InputStreamReader(newResource.getInputStream()));
         properties.load(br);
 
@@ -62,8 +83,7 @@ public class NoticeService {
         }
 
         // 홈 > 알림 API 호출 시작
-        String recipeurl = loadProperty().getProperty("recipeurl");
-        String url = recipeurl + "/v1/recipe/registration/registMemberNoti";
+        String url = recipeUrl + "/v1/recipe/registration/registMemberNoti";
 
         JSONObject newNoticePostNotifRequest = new JSONObject();
         newNoticePostNotifRequest.put("noti_img_key", "");                                      // 사용되지 않는 필드지만 API 스펙에 따라 셋팅
@@ -111,8 +131,7 @@ public class NoticeService {
         noticePostRepository.deleteById(noticePostKey);
 
         // 홈 > 알림 API 호출 시작
-        String recipeurl = loadProperty().getProperty("recipeurl");
-        String url = recipeurl + "/v1/recipe/main/deleteNoti/" + noticePostKey;
+        String url = recipeUrl + "/v1/recipe/main/deleteNoti/" + noticePostKey;
         new HttpConfig().callApi(new JSONObject(), url, HttpMethod.DELETE.name());
         // 홈 > 알림 API 호출 끝
     }
