@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.net.URLCodec;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.core.env.Environment;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
@@ -22,34 +23,41 @@ import java.io.*;
 import java.util.Iterator;
 import java.util.Properties;
 
-@Slf4j
 @Component
+@Slf4j
 public class S3FileUploadUtil {
 
-    // FIXME 프로퍼티 읽어오도록
-//    @Value("${spring.profiles.active}")
-    private String env_active;
-
-//    @Value("${cloud.aws.region.static}")
-    private String region;
     private String backendImageBucket;
     private String distributionDomain;
-
-    private AWSConfig awsConfig = new AWSConfig();
     private AmazonS3 amazonS3;
 
-    private void loadAndSetAwsAccessInfo() throws IOException {
-        // TODO 임시 하드코딩
-        env_active = "dev";
-        region = "ap-northeast-2";
-        backendImageBucket = loadProperty().getProperty("backendImageBucket");
-        distributionDomain = loadProperty().getProperty("distributionDomain");
-        amazonS3 = awsConfig.amazonS3(region, env_active);
+    private Environment environment;
+    private Properties properties;
+
+    public S3FileUploadUtil(Environment environment) throws IOException {
+        this.environment = environment;
+
+        properties = loadProperty();
+        distributionDomain = properties.getProperty("distributionDomain");
+        backendImageBucket = properties.getProperty("backendImageBucket");
+        amazonS3 = AWSConfig.amazonS3(properties.getProperty("cloud.aws.region.static"));
     }
 
     public Properties loadProperty() throws IOException {
+        log.info("S3FileUploadUtil.loadProperty");
+
+        if (environment == null)
+            throw new BusinessException("S3FileUploadUtil.environment field is failed to be injected. (의존성 주입 실패)");
+
+        String profileToUseProperties;
+        if (environment.getActiveProfiles().length == 0)
+            profileToUseProperties = "dev";  // Active Profile이 없을 경우(default일 경우) 개발계 구성을 사용한다. 추후 로컬 구성파일이 별도로 필요할 경우 변경한다.
+        else
+            profileToUseProperties = environment.getActiveProfiles()[0];
+
         Properties properties = new Properties();
-        Resource newResource = new ClassPathResource("awsAuth.properties");
+        Resource newResource = new ClassPathResource("awsAuth-" + profileToUseProperties + ".properties");
+        log.info("Currently using [awsAuth-{}.properties]", profileToUseProperties);
         BufferedReader br = new BufferedReader(new InputStreamReader(newResource.getInputStream()));
         properties.load(br);
 
@@ -57,7 +65,6 @@ public class S3FileUploadUtil {
     }
 
     public String uploadImageToS3AndGetUrl(MultipartFile multipartFile, String asIsImageUrl, String imageDirectoryPathAfterDomain) throws IOException, DecoderException {
-        loadAndSetAwsAccessInfo();
 
         String toBeImageFileName = multipartFile.getOriginalFilename();
         if (!isUrlLengthAvailable(
@@ -91,7 +98,6 @@ public class S3FileUploadUtil {
     }
 
     public void deleteImageFromS3(String asIsImageUrl, String imageDirectoryPathAfterDomain) throws IOException, DecoderException {
-        loadAndSetAwsAccessInfo();
 
         // TODO 삭제 오류시 익셉션 정의
         // 최초 등록이 아닐 경우 기존 이미지를 삭제한다.
