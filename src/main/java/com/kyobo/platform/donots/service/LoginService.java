@@ -6,6 +6,7 @@ import com.kyobo.platform.donots.common.exception.PasswordIncludePersonalInforma
 import com.kyobo.platform.donots.common.exception.PasswordNotMatchException;
 import com.kyobo.platform.donots.common.util.SessionUtil;
 import com.kyobo.platform.donots.model.dto.request.*;
+import com.kyobo.platform.donots.model.dto.response.AdminUserDetailResponse;
 import com.kyobo.platform.donots.model.dto.response.AdminUserListResponse;
 import com.kyobo.platform.donots.model.dto.response.AdminUserResponse;
 import com.kyobo.platform.donots.model.entity.AdminUser;
@@ -164,9 +165,9 @@ public class LoginService implements UserDetailsService {
     }
 
 
-    public AdminUserResponse loadUserById(Long id) throws UsernameNotFoundException {
+    public AdminUserDetailResponse loadUserById(Long id) throws UsernameNotFoundException {
         AdminUser adminUser = adminUserRepository.findById(id).orElseThrow(()-> new AdminUserNotFoundException());
-        return new AdminUserResponse(adminUser);
+        return new AdminUserDetailResponse(adminUser);
     }
     public AdminUserListResponse getAdminUserAll(String search, Pageable pageable, AdminUserSearchType type) {
         Page<AdminUser> pageAdminUser;
