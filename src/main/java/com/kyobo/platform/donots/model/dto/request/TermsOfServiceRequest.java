@@ -17,8 +17,7 @@ public class TermsOfServiceRequest {
     @NotBlank
     private String title;
 
-    @Schema(description = "본문")
-    @NotBlank
+    @Schema(description = "메모")
     private String body;
 
     @Schema(description = "버전")
