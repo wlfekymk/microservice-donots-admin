@@ -1,7 +1,6 @@
 package com.kyobo.platform.donots.model.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.kyobo.platform.donots.common.util.MarkingUtil;
 import com.kyobo.platform.donots.model.entity.AdminUser;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
