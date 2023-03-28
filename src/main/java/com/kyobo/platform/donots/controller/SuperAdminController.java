@@ -3,6 +3,7 @@ package com.kyobo.platform.donots.controller;
 import com.kyobo.platform.donots.model.dto.request.AdminUserSearchType;
 import com.kyobo.platform.donots.model.dto.request.CreateAdminUserRequest;
 import com.kyobo.platform.donots.model.dto.request.ModifyAdminUserRequest;
+import com.kyobo.platform.donots.model.dto.response.AdminUserDetailResponse;
 import com.kyobo.platform.donots.model.dto.response.AdminUserListResponse;
 import com.kyobo.platform.donots.model.dto.response.AdminUserResponse;
 import com.kyobo.platform.donots.service.LoginService;
@@ -69,12 +70,12 @@ public class SuperAdminController {
     @Operation(summary = "관리자 상세조회", description = "")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "성공",
-                    content = @Content(schema = @Schema(implementation = AdminUserResponse.class))),
+                    content = @Content(schema = @Schema(implementation = AdminUserDetailResponse.class))),
             @ApiResponse(responseCode = "1000", description = "이미 가입된 아이디입니다."),
             @ApiResponse(responseCode = "4000", description = "파라메터 인자값이 정상적이지 않습니다.")
     })
     public ResponseEntity getAdminUser(@PathVariable("id") Long id) {
-        AdminUserResponse userDetails = loginService.loadUserById(id);
+        AdminUserDetailResponse userDetails = loginService.loadUserById(id);
         return new ResponseEntity(userDetails, HttpStatus.OK);
     }
 
