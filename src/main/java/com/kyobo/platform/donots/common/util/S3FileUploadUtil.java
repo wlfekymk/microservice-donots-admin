@@ -84,13 +84,13 @@ public class S3FileUploadUtil {
             amazonS3.deleteObject(backendImageBucket, imageDirectoryPathAfterDomain + decodedAsIsImageFileName);
         }
 
-        File toBeImageFile = compressImageFile(multipartFile, toBeImageFileName, fileExt);
+        File toBeFile = convertToFile(multipartFile);
 
         // S3 업로드
-        amazonS3.putObject(new PutObjectRequest(backendImageBucket, imageDirectoryPathAfterDomain + toBeImageFileName, toBeImageFile));
+        amazonS3.putObject(new PutObjectRequest(backendImageBucket, imageDirectoryPathAfterDomain + toBeImageFileName, toBeFile));
 
         // 업로드 후 메모리에 있는 이미지파일 삭제
-        toBeImageFile.delete();
+        toBeFile.delete();
 
         // S3에 업로드한 이미지 URL을 파일명만 URL 인코딩하여 반환
         String encodedToBeProfilePictureUrl = buildFullUrlWithEncodedFileName(distributionDomain, imageDirectoryPathAfterDomain, toBeImageFileName);
@@ -128,6 +128,15 @@ public class S3FileUploadUtil {
         URLCodec uc = new URLCodec();
         String encodedFileName = uc.encode(fileName, "UTF-8");
         return "https://" + domain + "/" + fileDirectoryPathAfterDomain + encodedFileName;
+    }
+
+    private static File convertToFile(MultipartFile multipartFile) throws IOException {
+        File fileWrittenFromMultipartFile = new File(multipartFile.getOriginalFilename());
+        fileWrittenFromMultipartFile.createNewFile();
+        FileOutputStream fos = new FileOutputStream(fileWrittenFromMultipartFile);
+        fos.write(multipartFile.getBytes());
+        fos.close();
+        return fileWrittenFromMultipartFile;
     }
 
     private static File compressImageFile(MultipartFile multipartFile, String imageFileName, String fileExt) throws IOException {
