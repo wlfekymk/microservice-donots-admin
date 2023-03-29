@@ -92,12 +92,18 @@ public class NoticeService {
         newNoticePostNotifRequest.put("noti_type", "공지사항");                                 // 알림 유형 (승급, 공지사항)
         newNoticePostNotifRequest.put("noti_target_user_key", "");                              // 알림 대상 회원키 (공지사항 알림에서는 사용되지 않음)
 
-        // FIXME [TEST] 테스트를 위해 레시피 호출 중단
         JSONObject newNoticePostNotifResponse = new HttpConfig().callApi(newNoticePostNotifRequest, url, HttpMethod.POST.name());
+        if (newNoticePostNotifResponse == null) {
+            log.info("Recipe API 처리시 오류 발생 (newNoticePostNotifResponse == null)");
+            throw new DefaultException("Recipe API 처리시 오류 발생 (newNoticePostNotifResponse == null)");
+        }
+
         String newNoticePostNotifResponseValue = (String) newNoticePostNotifResponse.get("databody");
         log.info("newNoticePostNotifResponseValue: "+ newNoticePostNotifResponseValue);
-        if (!newNoticePostNotifResponseValue.isEmpty())
-            throw new DefaultException("Recipe API 처리시 오류 발생");
+        if (newNoticePostNotifResponseValue.isEmpty()) {
+            log.info("Recipe API 처리시 오류 발생 (newNoticePostNotifResponseValue.isEmpty())");
+            throw new DefaultException("Recipe API 처리시 오류 발생 (newNoticePostNotifResponseValue.isEmpty())");
+        }
         // 홈 > 알림 API 호출 끝
 
         return foundNoticePost.getNoticePostKey();
