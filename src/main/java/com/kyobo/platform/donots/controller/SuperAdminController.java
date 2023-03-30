@@ -40,6 +40,7 @@ public class SuperAdminController {
             @ApiResponse(responseCode = "4000", description = "파라메터 인자값이 정상적이지 않습니다.")
     })
     public ResponseEntity createAdminUser(@RequestBody @Valid CreateAdminUserRequest createAdminUserRequest, HttpServletRequest httpServletRequest) {
+
         AdminUserResponse adminUserResponse = loginService.createAdminUser(createAdminUserRequest, httpServletRequest);
         return new ResponseEntity(adminUserResponse, HttpStatus.CREATED);
     }

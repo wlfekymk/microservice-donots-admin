@@ -1,9 +1,6 @@
 package com.kyobo.platform.donots.service;
 
-import com.kyobo.platform.donots.common.exception.AdminUserNotFoundException;
-import com.kyobo.platform.donots.common.exception.AlreadyRegisteredIdException;
-import com.kyobo.platform.donots.common.exception.PasswordIncludePersonalInformation;
-import com.kyobo.platform.donots.common.exception.PasswordNotMatchException;
+import com.kyobo.platform.donots.common.exception.*;
 import com.kyobo.platform.donots.common.util.SessionUtil;
 import com.kyobo.platform.donots.model.dto.request.*;
 import com.kyobo.platform.donots.model.dto.response.AdminUserDetailResponse;
@@ -25,7 +22,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
@@ -71,16 +67,20 @@ public class LoginService implements UserDetailsService {
     }
     public AdminUserResponse createAdminUser(CreateAdminUserRequest createAdminUserRequest, HttpServletRequest httpServletRequest) {
 
-        HashMap<String, Object> sessionMap = SessionUtil.getGlobalCustomSessionValue(httpServletRequest, redisTemplate);
-        String adminIdFromSession = sessionMap.get("adminId").toString();
+        Long adminUserKeyFromSession = SessionUtil.getGlobalCustomSessionLongAttribute("id", httpServletRequest, redisTemplate);
+        String adminIdFromSession = SessionUtil.getGlobalCustomSessionStringAttribute("adminId", httpServletRequest, redisTemplate);
 
-        AdminUser adminUser = adminUserRepository.findByAdminId(createAdminUserRequest.getAdminId());
+        AdminUser foundAdminUser = adminUserRepository.findById(adminUserKeyFromSession).orElseThrow(() -> new AdminUserNotFoundException());
+        if (foundAdminUser.getRole() != "SUPER_ADMIN")
+            throw new InsufficientPermissionException();
 
-        if(adminUser != null)
+        // TODO existBy로 중복검사 후 새로 선언하여 받는다
+        AdminUser adminUserToCreate = adminUserRepository.findByAdminId(createAdminUserRequest.getAdminId());
+        if(adminUserToCreate != null)
             throw new AlreadyRegisteredIdException();
 
         LocalDateTime now = LocalDateTime.now();
-        adminUser = AdminUser.builder()
+        adminUserToCreate = AdminUser.builder()
                 .adminId(createAdminUserRequest.getAdminId())
                 .password(encoder.encode(createAdminUserRequest.getPassword()))
                 .adminUserName(createAdminUserRequest.getAdminUserName())
@@ -98,9 +98,9 @@ public class LoginService implements UserDetailsService {
                 .createdDate(now)
                 .lastSignInDate(now)
                 .build();
-        adminUserRepository.save(adminUser);
+        adminUserRepository.save(adminUserToCreate);
 
-        return new AdminUserResponse(adminUser);
+        return new AdminUserResponse(adminUserToCreate);
     }
 
     @Transactional
