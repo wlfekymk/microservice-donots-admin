@@ -51,8 +51,8 @@ public class SuperAdminController {
             @ApiResponse(responseCode = "200", description = "성공"),
             @ApiResponse(responseCode = "4000", description = "파라메터 인자값이 정상적이지 않습니다.")
     })
-    public ResponseEntity deleteAdminUser(@PathVariable("id") Long id) {
-        loginService.deleteAdminUser(id);
+    public ResponseEntity deleteAdminUser(@PathVariable("id") Long id, HttpServletRequest httpServletRequest) {
+        loginService.deleteAdminUser(id, httpServletRequest);
         return ResponseEntity.ok().build();
     }
 
@@ -62,8 +62,8 @@ public class SuperAdminController {
             @ApiResponse(responseCode = "200", description = "성공"),
             @ApiResponse(responseCode = "4000", description = "파라메터 인자값이 정상적이지 않습니다.")
     })
-    public ResponseEntity modifyAdminUser (@RequestBody @Valid ModifyAdminUserRequest modifyAdminUserRequest) {
-        loginService.modifyAdminUser(modifyAdminUserRequest);
+    public ResponseEntity modifyAdminUser (@RequestBody @Valid ModifyAdminUserRequest modifyAdminUserRequest, HttpServletRequest httpServletRequest) {
+        loginService.modifyAdminUser(modifyAdminUserRequest, httpServletRequest);
         return ResponseEntity.ok().build();
     }
 
@@ -75,8 +75,8 @@ public class SuperAdminController {
             @ApiResponse(responseCode = "1000", description = "이미 가입된 아이디입니다."),
             @ApiResponse(responseCode = "4000", description = "파라메터 인자값이 정상적이지 않습니다.")
     })
-    public ResponseEntity getAdminUser(@PathVariable("id") Long id) {
-        AdminUserDetailResponse userDetails = loginService.loadUserById(id);
+    public ResponseEntity getAdminUser(@PathVariable("id") Long id, HttpServletRequest httpServletRequest) {
+        AdminUserDetailResponse userDetails = loginService.loadUserById(id, httpServletRequest);
         return new ResponseEntity(userDetails, HttpStatus.OK);
     }
 
@@ -88,8 +88,8 @@ public class SuperAdminController {
             @ApiResponse(responseCode = "1000", description = "이미 가입된 아이디입니다."),
             @ApiResponse(responseCode = "4000", description = "파라메터 인자값이 정상적이지 않습니다.")
     })
-    public ResponseEntity getAdminUserList(@RequestParam(required = false) final String search, final AdminUserSearchType type, final Pageable pageable) {
-        AdminUserListResponse response = loginService.getAdminUserAll(search, pageable, type);
+    public ResponseEntity getAdminUserList(@RequestParam(required = false) final String search, final AdminUserSearchType type, final Pageable pageable, HttpServletRequest httpServletRequest) {
+        AdminUserListResponse response = loginService.getAdminUserAll(search, pageable, type, httpServletRequest);
         return new ResponseEntity(response, HttpStatus.OK);
     }
 

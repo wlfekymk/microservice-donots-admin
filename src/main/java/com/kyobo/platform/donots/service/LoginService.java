@@ -1,5 +1,6 @@
 package com.kyobo.platform.donots.service;
 
+import com.amazonaws.services.xray.model.Http;
 import com.kyobo.platform.donots.common.exception.*;
 import com.kyobo.platform.donots.common.util.SessionUtil;
 import com.kyobo.platform.donots.model.dto.request.*;
@@ -68,11 +69,7 @@ public class LoginService implements UserDetailsService {
     public AdminUserResponse createAdminUser(CreateAdminUserRequest createAdminUserRequest, HttpServletRequest httpServletRequest) {
 
         Long adminUserKeyFromSession = SessionUtil.getGlobalCustomSessionLongAttribute("id", httpServletRequest, redisTemplate);
-        String adminIdFromSession = SessionUtil.getGlobalCustomSessionStringAttribute("adminId", httpServletRequest, redisTemplate);
-
-        AdminUser foundAdminUser = adminUserRepository.findById(adminUserKeyFromSession).orElseThrow(() -> new AdminUserNotFoundException());
-        if (!"SUPER_ADMIN".equals(foundAdminUser.getRole()))
-            throw new InsufficientPermissionException();
+        checkIsAdminUserPermitted(adminUserKeyFromSession);
 
         // TODO existBy로 중복검사 후 새로 선언하여 받는다
         AdminUser adminUserToCreate = adminUserRepository.findByAdminId(createAdminUserRequest.getAdminId());
@@ -80,6 +77,7 @@ public class LoginService implements UserDetailsService {
             throw new AlreadyRegisteredIdException();
 
         LocalDateTime now = LocalDateTime.now();
+        String adminIdFromSession = SessionUtil.getGlobalCustomSessionStringAttribute("adminId", httpServletRequest, redisTemplate);
         adminUserToCreate = AdminUser.builder()
                 .adminId(createAdminUserRequest.getAdminId())
                 .password(encoder.encode(createAdminUserRequest.getPassword()))
@@ -125,12 +123,20 @@ public class LoginService implements UserDetailsService {
     }
 
     @Transactional
-    public void deleteAdminUser(Long id) {
+    public void deleteAdminUser(Long id, HttpServletRequest httpServletRequest) {
+
+        Long adminUserKeyFromSession = SessionUtil.getGlobalCustomSessionLongAttribute("id", httpServletRequest, redisTemplate);
+        checkIsAdminUserPermitted(adminUserKeyFromSession);
+
         adminUserRepository.deleteById(id);
     }
 
     @Transactional
-    public AdminUserResponse modifyAdminUser(ModifyAdminUserRequest modifyAdminUserRequest){
+    public AdminUserResponse modifyAdminUser(ModifyAdminUserRequest modifyAdminUserRequest, HttpServletRequest httpServletRequest){
+
+        Long adminUserKeyFromSession = SessionUtil.getGlobalCustomSessionLongAttribute("id", httpServletRequest, redisTemplate);
+        checkIsAdminUserPermitted(adminUserKeyFromSession);
+
         AdminUser adminUser = adminUserRepository.findByAdminId(modifyAdminUserRequest.getAdminId());
 
         if(adminUser == null)
@@ -138,6 +144,7 @@ public class LoginService implements UserDetailsService {
 
         adminUser.updateModifyAdminUser(modifyAdminUserRequest);
 
+        // TODO 레코드가 커밋되지 않았는데도 Reponse를 할 가능성이 있음
         return new AdminUserResponse(adminUser);
     }
 
@@ -157,19 +164,25 @@ public class LoginService implements UserDetailsService {
         return new AdminUserResponse(adminUser);
     }
 
-
-
     public AdminUserResponse loadUserByAmdinId(String adminId) throws UsernameNotFoundException {
         AdminUser adminUser = adminUserRepository.findByAdminId(adminId);
         return new AdminUserResponse(adminUser);
     }
 
 
-    public AdminUserDetailResponse loadUserById(Long id) throws UsernameNotFoundException {
+    public AdminUserDetailResponse loadUserById(Long id, HttpServletRequest httpServletRequest) throws UsernameNotFoundException {
+
+        Long adminUserKeyFromSession = SessionUtil.getGlobalCustomSessionLongAttribute("id", httpServletRequest, redisTemplate);
+        checkIsAdminUserPermitted(adminUserKeyFromSession);
+
         AdminUser adminUser = adminUserRepository.findById(id).orElseThrow(()-> new AdminUserNotFoundException());
         return new AdminUserDetailResponse(adminUser);
     }
-    public AdminUserListResponse getAdminUserAll(String search, Pageable pageable, AdminUserSearchType type) {
+    public AdminUserListResponse getAdminUserAll(String search, Pageable pageable, AdminUserSearchType type, HttpServletRequest httpServletRequest) {
+
+        Long adminUserKeyFromSession = SessionUtil.getGlobalCustomSessionLongAttribute("id", httpServletRequest, redisTemplate);
+        checkIsAdminUserPermitted(adminUserKeyFromSession);
+
         Page<AdminUser> pageAdminUser;
         if (type.equals(AdminUserSearchType.ADMIN_ID)) {
             pageAdminUser = adminUserRepository.findByAdminIdContaining(search, pageable);
@@ -202,5 +215,11 @@ public class LoginService implements UserDetailsService {
     public void passwordInitialization(Long id) {
         AdminUser adminUser = adminUserRepository.findById(id).orElseThrow(()-> new AdminUserNotFoundException());
         adminUser.updateLastPasswordChangeDate();
+    }
+
+    private void checkIsAdminUserPermitted(Long adminUserKeyFromSession) {
+        AdminUser foundAdminUser = adminUserRepository.findById(adminUserKeyFromSession).orElseThrow(() -> new AdminUserNotFoundException());
+        if (!"SUPER_ADMIN".equals(foundAdminUser.getRole()))
+            throw new InsufficientPermissionException();
     }
 }
