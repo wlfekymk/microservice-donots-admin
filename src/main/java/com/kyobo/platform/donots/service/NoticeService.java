@@ -100,8 +100,8 @@ public class NoticeService {
 
         String newNoticePostNotifResponseValue = (String) newNoticePostNotifResponse.get("databody");
         log.info("newNoticePostNotifResponseValue: "+ newNoticePostNotifResponseValue);
-        if (newNoticePostNotifResponseValue == null) {
-            log.info("Recipe API 처리시 오류 발생 (ResponseBody(응답받은 JSON)에 databody 속성이 없음)");
+        if (newNoticePostNotifResponseValue.isEmpty()) {
+            log.info("Recipe API 처리시 오류 발생 (newNoticePostNotifResponseValue.isEmpty())");
             throw new DefaultException("Recipe API 처리시 오류 발생 (newNoticePostNotifResponseValue.isEmpty())");
         }
         // 홈 > 알림 API 호출 끝
