@@ -71,6 +71,13 @@ public class ControllerExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity(exceptionResponse, HttpStatus.NOT_FOUND);
     }
 
+    @ExceptionHandler(InsufficientPermissionException.class)
+    public final ResponseEntity<Object> insufficientPermissionException(BusinessException ex, WebRequest request) {
+        ExceptionResponse exceptionResponse =
+                new ExceptionResponse(new Date(), ex, request.getDescription(false));
+        return new ResponseEntity(exceptionResponse, HttpStatus.UNAUTHORIZED);
+    }
+
     @ExceptionHandler(PasswordIncludePersonalInformation.class)
     public final ResponseEntity<Object> passwordIncludePersonalInformation(BusinessException ex, WebRequest request) {
         ExceptionResponse exceptionResponse =
