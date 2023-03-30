@@ -71,7 +71,7 @@ public class LoginService implements UserDetailsService {
         String adminIdFromSession = SessionUtil.getGlobalCustomSessionStringAttribute("adminId", httpServletRequest, redisTemplate);
 
         AdminUser foundAdminUser = adminUserRepository.findById(adminUserKeyFromSession).orElseThrow(() -> new AdminUserNotFoundException());
-        if (foundAdminUser.getRole() != "SUPER_ADMIN")
+        if (!"SUPER_ADMIN".equals(foundAdminUser.getRole()))
             throw new InsufficientPermissionException();
 
         // TODO existBy로 중복검사 후 새로 선언하여 받는다
