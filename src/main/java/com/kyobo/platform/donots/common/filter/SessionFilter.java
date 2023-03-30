@@ -6,6 +6,7 @@ import com.kyobo.platform.donots.model.repository.AdminUserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.annotation.Order;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
@@ -13,10 +14,10 @@ import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 
-
-@Slf4j
+@Order(2)
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class SessionFilter implements Filter {
 
     private static final String SIGN_IN_URI_FROM_ROOT = "/login/v1/signIn";
@@ -33,7 +34,7 @@ public class SessionFilter implements Filter {
 
         HttpServletRequest request = (HttpServletRequest) req;
         log.info("request.getRequestURI(): {}", request.getRequestURI());
-        log.info("HttpServletRequest.getSession().getId(): {}"+ request.getSession().getId());
+        log.info("HttpServletRequest.getSession().getId(): {}", request.getSession().getId());
 
         if (request.getRequestURI().equals(SIGN_IN_URI_FROM_ROOT)) {
             log.info("SessionFilter.doFilter End");

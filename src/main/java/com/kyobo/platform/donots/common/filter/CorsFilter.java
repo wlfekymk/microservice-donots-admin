@@ -1,7 +1,6 @@
 package com.kyobo.platform.donots.common.filter;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
@@ -11,13 +10,8 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Enumeration;
 
-
-/**
- * CORS 설정
- */
-
+@Order(1)
 @Component
-@Order(Ordered.HIGHEST_PRECEDENCE)
 @Slf4j
 public class CorsFilter implements Filter {
     @Override
@@ -61,3 +55,4 @@ public class CorsFilter implements Filter {
         }
     }
 }
+
