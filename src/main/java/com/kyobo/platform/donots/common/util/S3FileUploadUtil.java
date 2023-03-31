@@ -20,12 +20,18 @@ import javax.imageio.ImageWriter;
 import javax.imageio.stream.ImageOutputStream;
 import java.awt.image.BufferedImage;
 import java.io.*;
+import java.text.Normalizer;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Properties;
 
 @Component
 @Slf4j
 public class S3FileUploadUtil {
+
+    private String[] PERMITTED_UPLOAD_EXTENSIONS = {".png", ".jpg", ".jpeg", ".gif"};
 
     private String backendImageBucket;
     private String distributionDomain;
@@ -65,16 +71,38 @@ public class S3FileUploadUtil {
     }
 
     public String uploadImageToS3AndGetUrl(MultipartFile multipartFile, String asIsImageUrl, String imageDirectoryPathAfterDomain) throws IOException, DecoderException {
+        log.info("S3FileUploadUtil.uploadImageToS3AndGetUrl Start");
 
-        String toBeImageFileName = multipartFile.getOriginalFilename();
-        if (!isUrlLengthAvailable(
-                buildFullUrlWithEncodedFileName(distributionDomain, imageDirectoryPathAfterDomain, toBeImageFileName))
-        ) {
+        // macOS에서 업로드시 생기는 자소분리현상을 해결하기 위한 로직
+        log.info("multipartFile.getOriginalFilename(): {}", multipartFile.getOriginalFilename());
+        String normalizedMultipartFilename = Normalizer.normalize(multipartFile.getOriginalFilename(), Normalizer.Form.NFC);
+        log.info("normalizedMultipartFilename: {}", normalizedMultipartFilename);
+
+        // 파일명, 확장자 분리 및 확장자 허용여부 확인
+        String nameWithoutExtension = normalizedMultipartFilename.replaceFirst("[.][^.]+$", ""); // 파일명에서 확장자를 제거
+        log.info("nameWithoutExtension: {}", nameWithoutExtension);
+        final String extension = normalizedMultipartFilename.substring(normalizedMultipartFilename.lastIndexOf(".")); // 확장자만 추출
+        log.info("extension: {}", extension);
+        if (Arrays.stream(PERMITTED_UPLOAD_EXTENSIONS).noneMatch(ext -> ext.equals(extension))) {
+            log.info("허용되지 않은 확장자입니다. 허용된 확장자: " + Arrays.toString(PERMITTED_UPLOAD_EXTENSIONS));
+            throw new BusinessException("허용되지 않은 확장자입니다. 허용된 확장자: " + Arrays.toString(PERMITTED_UPLOAD_EXTENSIONS));
+        }
+
+        // 파일명 유일성을 확보하기 위해 파일명과 확장자 사이에 업로드 시각 붙이기
+        LocalDateTime now = LocalDateTime.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS");
+        String toBeFileNameCurrentDateTimeAppended = nameWithoutExtension + "_" + now.format(formatter) + extension;
+        log.info("File Name to upload: {}", toBeFileNameCurrentDateTimeAppended);
+
+        // S3에 업로드할 파일URL을 파일명만 URL인코딩한다
+        String encodedToBeProfilePictureUrl = buildFullUrlWithEncodedFileName(distributionDomain, imageDirectoryPathAfterDomain, toBeFileNameCurrentDateTimeAppended);
+        if (!isUrlLengthAvailable(encodedToBeProfilePictureUrl)) {
+            log.info("업로드 하려는 파일명이 너무 깁니다");
             throw new BusinessException("업로드 하려는 파일명이 너무 깁니다");
         }
 
-        String[] dotSplittedImageFileName = toBeImageFileName.split("\\.");
-        String fileExt = dotSplittedImageFileName[dotSplittedImageFileName.length - 1];
+        File toBeFile = convertMultipartFileToFileWithCustomName(multipartFile, toBeFileNameCurrentDateTimeAppended);
+        log.info("toBeFile.getName(): {}", toBeFile.getName());
 
         if (!StringUtils.isBlank(asIsImageUrl)) {
             String[] slashSplittedAsIsImageUrl = asIsImageUrl.split("/");
@@ -84,16 +112,14 @@ public class S3FileUploadUtil {
             amazonS3.deleteObject(backendImageBucket, imageDirectoryPathAfterDomain + decodedAsIsImageFileName);
         }
 
-        File toBeFile = convertToFile(multipartFile);
-
         // S3 업로드
-        amazonS3.putObject(new PutObjectRequest(backendImageBucket, imageDirectoryPathAfterDomain + toBeImageFileName, toBeFile));
+        amazonS3.putObject(new PutObjectRequest(
+                backendImageBucket, imageDirectoryPathAfterDomain + toBeFile.getName(), toBeFile));
 
         // 업로드 후 메모리에 있는 이미지파일 삭제
         toBeFile.delete();
 
-        // S3에 업로드한 이미지 URL을 파일명만 URL 인코딩하여 반환
-        String encodedToBeProfilePictureUrl = buildFullUrlWithEncodedFileName(distributionDomain, imageDirectoryPathAfterDomain, toBeImageFileName);
+        log.info("S3FileUploadUtil.uploadImageToS3AndGetUrl End");
         return encodedToBeProfilePictureUrl;
     }
 
@@ -128,6 +154,17 @@ public class S3FileUploadUtil {
         URLCodec uc = new URLCodec();
         String encodedFileName = uc.encode(fileName, "UTF-8");
         return "https://" + domain + "/" + fileDirectoryPathAfterDomain + encodedFileName;
+    }
+
+    private static File convertMultipartFileToFileWithCustomName(MultipartFile multipartFile, String customName) throws IOException {
+
+        File fileWrittenFromMultipartFile = new File(customName);
+        fileWrittenFromMultipartFile.createNewFile();
+        FileOutputStream fos = new FileOutputStream(fileWrittenFromMultipartFile);
+        fos.write(multipartFile.getBytes());
+        fos.close();
+
+        return fileWrittenFromMultipartFile;
     }
 
     private static File convertToFile(MultipartFile multipartFile) throws IOException {
