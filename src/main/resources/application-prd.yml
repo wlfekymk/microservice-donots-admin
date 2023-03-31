@@ -1,0 +1,43 @@
+server:
+  port: 9080
+
+spring:
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://rds-an2-dnt-prd-app-db-member.cw4fem799slo.ap-northeast-2.rds.amazonaws.com
+    hikari:
+      pool-name: jpa-hikari-pool
+      maximum-pool-size: 5
+      jdbc-url: jdbc:postgresql://rds-an2-dnt-prd-app-db-member.cw4fem799slo.ap-northeast-2.rds.amazonaws.com:15432/donots_account
+      username: dntAdmin
+      password: kyobo11!
+      driver-class-name: org.postgresql.Driver
+      data-source-properties:
+        rewriteBatchedStatements: true
+
+  session:
+    store-type: redis
+
+  redis:
+    host: ec-an2-dnt-prd-app-redis.tetewz.clustercfg.apn2.cache.amazonaws.com
+    port: 6379
+    database: 1
+
+  jpa:
+    database: postgresql
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    generate-ddl: false
+    hibernate:
+      ddl-auto: none
+      naming:
+        physical-strategy: org.springframework.boot.orm.jpa.hibernate.SpringPhysicalNamingStrategy
+    show-sql: true
+    properties:
+      hibernate:
+        show_sql: true
+        format_sql: true
+        use_sql_comments: true
+
+logging:
+  level:
+    root: info
