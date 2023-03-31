@@ -51,6 +51,7 @@ public class OneOnOneInquiryService {
             else if (answerRequest.getStatus() == OneOnOneInquiryPost.Status.ANSWER_PENDING) {
                 foundOneOnOneInquiryPost.setAdminId(null);
                 foundOneOnOneInquiryPost.setAnswerCompletedDatetime(null);
+                foundOneOnOneInquiryPost.setAnswer(null);
             }
         }
     }
