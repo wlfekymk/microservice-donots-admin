@@ -8,7 +8,7 @@ spring:
     hikari:
       pool-name: jpa-hikari-pool
       maximum-pool-size: 5
-      jdbc-url: jdbc:postgresql://rds-an2-dnt-stg-app-db-member.cpdg0ekuysyg.ap-northeast-2.rds.amazonaws.com:15432/postgres
+      jdbc-url: jdbc:postgresql://rds-an2-dnt-stg-app-db-member.cpdg0ekuysyg.ap-northeast-2.rds.amazonaws.com:15432/donots_account
       username: dntAdmin
       password: kyobo11!
       driver-class-name: org.postgresql.Driver
@@ -28,7 +28,7 @@ spring:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     generate-ddl: false
     hibernate:
-      ddl-auto: update
+      ddl-auto: none
       naming:
         physical-strategy: org.springframework.boot.orm.jpa.hibernate.SpringPhysicalNamingStrategy
     show-sql: true
