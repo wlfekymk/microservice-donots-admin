@@ -5,6 +5,7 @@ import com.kyobo.platform.donots.model.dto.response.ParentAccountResponse;
 import com.kyobo.platform.donots.model.dto.response.QParentAccountResponse;
 import com.kyobo.platform.donots.model.entity.service.parent.ParentGrade;
 import com.kyobo.platform.donots.model.entity.service.parent.ParentType;
+import com.kyobo.platform.donots.model.repository.searchcondition.OrderingCriterion;
 import com.kyobo.platform.donots.model.repository.searchcondition.ParentAccountSearchConditionAndTerm;
 import com.querydsl.core.QueryResults;
 import com.querydsl.core.types.OrderSpecifier;
@@ -48,6 +49,8 @@ public class ParentRepositoryImpl implements ParentRepositoryCustom {
             case MEMBER_KEY -> booleanExpressionOfSelectedSearchConditionAndTerm = keyEq(Long.parseLong(searchConditionAndTerm.getSearchTerm()));
         }
 
+        // Default 정렬 지정
+        searchConditionAndTerm.setOrderingCriterion(OrderingCriterion.CREATED_AT_DESC);
         OrderSpecifier<LocalDateTime> orderSpecifier = account.createdAt.desc();
         switch (searchConditionAndTerm.getOrderingCriterion()) {
             case CREATED_AT_DESC -> orderSpecifier = account.createdAt.desc();
@@ -115,7 +118,7 @@ public class ParentRepositoryImpl implements ParentRepositoryCustom {
         return hasText(email) ? parent.email.contains(email) : null;
     }
     private BooleanExpression keyEq(Long key) {
-        if (key == null || key == 0)
+        if (key == null || key.equals(0L))
             return null;
 
         return parent.key.eq(key);
