@@ -15,7 +15,7 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class SessionUtil {
 
-    public static final int MAX_INACTIVE_INTERVAL_IN_SECOUNDS = 30/*분*/ * 60;
+    public static final int MAX_INACTIVE_INTERVAL_IN_SECONDS = 30/*분*/ * 60;
     public static final int MAX_INACTIVE_INTERVAL_IN_MINUTES = 30;
 
     public static HashMap<String, Object> validateAndGetSessionValueAndExtendSessionInterval(HttpSession httpSession) {
@@ -31,7 +31,7 @@ public class SessionUtil {
 
         log.info("httpSession.setMaxInactiveInterval(MAX_INACTIVE_INTERVAL)");
         // 세션유효시간 연장
-        httpSession.setMaxInactiveInterval(MAX_INACTIVE_INTERVAL_IN_SECOUNDS);
+        httpSession.setMaxInactiveInterval(MAX_INACTIVE_INTERVAL_IN_SECONDS);
         log.info("(HashMap<String, Object>) sessionMapUncasted");
         HashMap<String, Object> sessionMap = (HashMap<String, Object>) sessionMapUncasted;
 
@@ -80,7 +80,7 @@ public class SessionUtil {
         sessionMap.put("adminId", adminUser.getAdminId());
 
         httpSession.setAttribute("sessionDto", sessionMap);
-        httpSession.setMaxInactiveInterval(MAX_INACTIVE_INTERVAL_IN_SECOUNDS);
+        httpSession.setMaxInactiveInterval(MAX_INACTIVE_INTERVAL_IN_SECONDS);
 
         log.info("SessionUtil.populateLocalSession End");
     }
@@ -103,7 +103,7 @@ public class SessionUtil {
     private static void extendSessionInterval(HttpSession httpSession) {
         log.info("SessionUtil.extendSessionInterval Start");
 
-        httpSession.setMaxInactiveInterval(MAX_INACTIVE_INTERVAL_IN_SECOUNDS);
+        httpSession.setMaxInactiveInterval(MAX_INACTIVE_INTERVAL_IN_SECONDS);
 
         log.info("SessionUtil.extendSessionInterval End");
     }
