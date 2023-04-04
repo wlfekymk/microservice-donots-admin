@@ -1,6 +1,6 @@
 package com.kyobo.platform.donots.common.util;
 
-import com.kyobo.platform.donots.common.exception.BusinessException;
+import com.kyobo.platform.donots.common.exception.InvalidSessionException;
 import com.kyobo.platform.donots.model.entity.AdminUser;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -25,8 +25,8 @@ public class SessionUtil {
         Object sessionMapUncasted = httpSession.getAttribute("sessionDto");
         log.info("if (sessionMapUncasted == null || !(sessionMapUncasted instanceof Map))");
         if (sessionMapUncasted == null || !(sessionMapUncasted instanceof Map)) {
-            log.info("throw new BusinessException(\"Session 정보가 없거나 유효하지 않습니다.\")");
-            throw new BusinessException("Session 정보가 없거나 유효하지 않습니다.");
+            log.info("throw new InvalidSessionException()");
+            throw new InvalidSessionException();
         }
 
         log.info("httpSession.setMaxInactiveInterval(MAX_INACTIVE_INTERVAL)");
@@ -43,15 +43,19 @@ public class SessionUtil {
         log.info("SessionUtil.validateAndGetGlobalCustomSessionValueAndExtendSessionInterval Start");
 
         Object sessionKeyUncasted = request.getHeader("sessionKey");
-        if (sessionKeyUncasted == null || !(sessionKeyUncasted instanceof String))
-            throw new BusinessException("sessionKey가 없거나 유효하지 않습니다");
+        if (sessionKeyUncasted == null || !(sessionKeyUncasted instanceof String)) {
+            log.info("Header에 sessionKey 속성이 없음");
+            throw new InvalidSessionException();
+        }
 
         String sessionKey = (String) sessionKeyUncasted;
 
         ValueOperations<String, Object> operations = redisTemplate.opsForValue();
         Object sessionMapUncasted = operations.get(sessionKey);
-        if (sessionMapUncasted == null || !(sessionMapUncasted instanceof Map))
-            throw new BusinessException("Session 정보가 없거나 유효하지 않습니다.");
+        if (sessionMapUncasted == null || !(sessionMapUncasted instanceof Map)) {
+            log.info("throw new InvalidSessionException()");
+            throw new InvalidSessionException();
+        }
         // TODO 여기서 로그인 페이지로 가이드 할 수 있도록 합의된 오류메시지를 전달해야함
 
         HashMap<String, Object> sessionMap = (HashMap<String, Object>) sessionMapUncasted;

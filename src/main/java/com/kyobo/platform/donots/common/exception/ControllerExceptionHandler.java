@@ -50,6 +50,13 @@ public class ControllerExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity(exceptionResponse, HttpStatus.NOT_FOUND);
     }
 
+    @ExceptionHandler(InvalidSessionException.class)
+    public final ResponseEntity<Object> invalidSessionException(BusinessException ex, WebRequest request) {
+        ExceptionResponse exceptionResponse =
+                new ExceptionResponse(new Date(), ex, request.getDescription(false));
+        return new ResponseEntity(exceptionResponse, HttpStatus.BAD_REQUEST);
+    }
+
     @ExceptionHandler(PasswordNotMatchException.class)
     public final ResponseEntity<Object> passwordNotMatchException(BusinessException ex, WebRequest request) {
         ExceptionResponse exceptionResponse =
