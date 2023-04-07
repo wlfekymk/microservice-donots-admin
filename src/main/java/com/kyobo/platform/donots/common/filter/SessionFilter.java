@@ -2,7 +2,6 @@ package com.kyobo.platform.donots.common.filter;
 
 
 import com.kyobo.platform.donots.common.util.SessionUtil;
-import com.kyobo.platform.donots.model.repository.AdminUserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,10 +19,9 @@ import java.io.IOException;
 @Slf4j
 public class SessionFilter implements Filter {
 
-    private static final String SIGN_IN_URI_FROM_ROOT = "/login/v1/signIn";
-
-    @Autowired
-    private AdminUserRepository adminUserRepository;
+    private static final String REQUEST_URI_SIGN_IN = "/login/v1/signIn";
+    private static final String REQUEST_URI_SWAGGER_KEYWORD = "/swagger-";
+    private static final String REQUEST_URI_SWAGGER_API_DOCS_KEYWORD = "/api-docs";
 
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
@@ -36,7 +34,9 @@ public class SessionFilter implements Filter {
         log.info("request.getRequestURI(): {}", request.getRequestURI());
         log.info("HttpServletRequest.getSession().getId(): {}", request.getSession().getId());
 
-        if (request.getRequestURI().equals(SIGN_IN_URI_FROM_ROOT)) {
+        String requestURI = request.getRequestURI();
+        // TODO 개발계도 외부노출되므로 막아야함
+        if (requestURI.equals(REQUEST_URI_SIGN_IN) || requestURI.contains(REQUEST_URI_SWAGGER_KEYWORD) || requestURI.contains(REQUEST_URI_SWAGGER_API_DOCS_KEYWORD)) {
             log.info("SessionFilter.doFilter End");
             chain.doFilter(req, res);
         }
