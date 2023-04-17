@@ -53,6 +53,7 @@ public class SuperAdminService {
     @Transactional
     public AdminUserResponse createAdminUser(CreateAdminUserRequest createAdminUserRequest, HttpServletRequest httpServletRequest) {
         Long adminUserKeyFromSession = SessionUtil.getGlobalCustomSessionLongAttribute("id", httpServletRequest, redisTemplate);
+        String regeditAdminId = SessionUtil.getGlobalCustomSessionStringAttribute("adminId", httpServletRequest, redisTemplate);
         checkIsAdminUserPermitted(adminUserKeyFromSession);
 
         // TODO existBy로 중복검사 후 새로 선언하여 받는다
@@ -61,7 +62,6 @@ public class SuperAdminService {
             throw new AlreadyRegisteredIdException();
 
         LocalDateTime now = LocalDateTime.now();
-        String regeditAdminId = SessionUtil.getGlobalCustomSessionStringAttribute("adminId", httpServletRequest, redisTemplate);
 
         // 유저정보 저장
         adminUserRepository.save(
@@ -85,12 +85,12 @@ public class SuperAdminService {
                         .build()
         );
 
+        log.info("");
         //ADMIN 권한 이력 관리
         regeditAdminAccessPermission(createAdminUserRequest.getAdminId(), PermissionCategory.C, regeditAdminId);
 
         return new AdminUserResponse(adminUser);
     }
-
 
     /**
      * 관리자 정보 변경
