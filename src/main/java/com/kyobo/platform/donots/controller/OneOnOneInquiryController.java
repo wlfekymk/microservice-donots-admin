@@ -1,11 +1,11 @@
-package com.kyobo.platform.donots.oneononeinquiry.controller;
+package com.kyobo.platform.donots.controller;
 
 
 import com.kyobo.platform.donots.common.util.SessionUtil;
-import com.kyobo.platform.donots.oneononeinquiry.dto.request.AnswerRequest;
-import com.kyobo.platform.donots.oneononeinquiry.dto.response.OneOnOneInquiryPostDetailsListResponse;
-import com.kyobo.platform.donots.oneononeinquiry.dto.response.OneOnOneInquiryPostDetailsResponse;
-import com.kyobo.platform.donots.oneononeinquiry.service.OneOnOneInquiryService;
+import com.kyobo.platform.donots.model.dto.request.AnswerRequest;
+import com.kyobo.platform.donots.model.dto.response.OneOnOneInquiryPostDetailsListResponse;
+import com.kyobo.platform.donots.model.dto.response.OneOnOneInquiryPostDetailsResponse;
+import com.kyobo.platform.donots.service.OneOnOneInquiryService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,7 +17,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 import java.io.IOException;
 import java.util.HashMap;

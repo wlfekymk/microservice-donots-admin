@@ -1,4 +1,4 @@
-package com.kyobo.platform.donots.oneononeinquiry.entity;
+package com.kyobo.platform.donots.model.entity;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
