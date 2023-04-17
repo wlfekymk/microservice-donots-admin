@@ -86,7 +86,7 @@ public class SuperAdminService {
         );
 
         //ADMIN 권한 이력 관리
-        regeditAdminAccessPermission(adminUser, PermissionCategory.C, regeditAdminId);
+        regeditAdminAccessPermission(createAdminUserRequest.getAdminId(), PermissionCategory.C, regeditAdminId);
 
         return new AdminUserResponse(adminUser);
     }
@@ -109,7 +109,7 @@ public class SuperAdminService {
             throw new AdminUserNotFoundException();
         adminUser.updateModifyAdminUser(modifyAdminUserRequest);
         //ADMIN 권한 이력 관리
-        regeditAdminAccessPermission(adminUser, PermissionCategory.U, regeditAdminId);
+        regeditAdminAccessPermission(adminUser.getAdminId(), PermissionCategory.U, regeditAdminId);
         return new AdminUserResponse(adminUser);
     }
 
@@ -126,7 +126,7 @@ public class SuperAdminService {
         AdminUser adminUser = adminUserRepository.findById(id).orElseThrow(() -> new AdminUserNotFoundException());
         adminUserRepository.deleteById(id);
         //ADMIN 권한 이력 관리
-        regeditAdminAccessPermission(adminUser, PermissionCategory.D, regeditAdminId);
+        regeditAdminAccessPermission(adminUser.getAdminId(), PermissionCategory.D, regeditAdminId);
     }
 
     public AdminUserListResponse getAdminUserAll(String search, Pageable pageable, AdminUserSearchType type, HttpServletRequest httpServletRequest) {
@@ -167,7 +167,7 @@ public class SuperAdminService {
         checkIsAdminUserPermitted(adminUserKeyFromSession);
         AdminUser adminUser = adminUserRepository.findById(id).orElseThrow(() -> new AdminUserNotFoundException());
         //ADMIN 권한 이력 관리
-        regeditAdminAccessPermission(adminUser, PermissionCategory.R, regeditAdminId);
+        regeditAdminAccessPermission(adminUser.getAdminId(), PermissionCategory.R, regeditAdminId);
         return new AdminUserDetailResponse(adminUser);
     }
 
@@ -198,13 +198,13 @@ public class SuperAdminService {
     /**
      * 권한 부여 이력 등록
      *
-     * @param adminUser
+     * @param adminId
      * @param permissionCategory
      */
-    private void regeditAdminAccessPermission(AdminUser adminUser, PermissionCategory permissionCategory, String regeditAdminId) {
+    private void regeditAdminAccessPermission(String adminId, PermissionCategory permissionCategory, String regeditAdminId) {
         adminAccessPermissionRepository.save(
                 AdminAccessPermission.builder()
-                        .adminId(adminUser.getAdminId())
+                        .adminId(adminId)
                         .regeditAdminId(regeditAdminId)
                         .permissionCategory(permissionCategory)
                         .createdDate(LocalDateTime.now())
