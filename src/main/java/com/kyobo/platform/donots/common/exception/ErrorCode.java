@@ -19,6 +19,7 @@ public enum ErrorCode {
     INSUFFICIENT_PERMISSION(4004, "권한이 부족합니다."),
     PASSWORD_INCLUDE_PERSONAL_INFORMATION(4005, "패스워드에 개인정보가 포함되었습니다."),
     PASSWORD_NOT_MATCH(5000, "패스워드가 맞지 않습니다."),
+    PASSWORD_FIVE_COUNT_NOT_MATCH(5001, "패스워드가 5회 틀려 계정이 잠겼습니다."),
     DEFAULT(9999, "정의되지 않은 에러");
 
     public final int status;
