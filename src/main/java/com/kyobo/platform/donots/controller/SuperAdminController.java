@@ -7,6 +7,7 @@ import com.kyobo.platform.donots.model.dto.response.AdminUserDetailResponse;
 import com.kyobo.platform.donots.model.dto.response.AdminUserListResponse;
 import com.kyobo.platform.donots.model.dto.response.AdminUserResponse;
 import com.kyobo.platform.donots.service.LoginService;
+import com.kyobo.platform.donots.service.SuperAdminService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -29,7 +30,7 @@ import java.util.Map;
 @RestController
 public class SuperAdminController {
 
-    private final LoginService loginService;
+    private final SuperAdminService superAdminService;
 
     @PostMapping("/v1/admin-user")
     @Operation(summary = "관리자 생성", description = "")
@@ -41,7 +42,7 @@ public class SuperAdminController {
     })
     public ResponseEntity createAdminUser(@RequestBody @Valid CreateAdminUserRequest createAdminUserRequest, HttpServletRequest httpServletRequest) {
 
-        AdminUserResponse adminUserResponse = loginService.createAdminUser(createAdminUserRequest, httpServletRequest);
+        AdminUserResponse adminUserResponse = superAdminService.createAdminUser(createAdminUserRequest, httpServletRequest);
         return new ResponseEntity(adminUserResponse, HttpStatus.CREATED);
     }
 
@@ -52,7 +53,7 @@ public class SuperAdminController {
             @ApiResponse(responseCode = "4000", description = "파라메터 인자값이 정상적이지 않습니다.")
     })
     public ResponseEntity deleteAdminUser(@PathVariable("id") Long id, HttpServletRequest httpServletRequest) {
-        loginService.deleteAdminUser(id, httpServletRequest);
+        superAdminService.deleteAdminUser(id, httpServletRequest);
         return ResponseEntity.ok().build();
     }
 
@@ -63,7 +64,7 @@ public class SuperAdminController {
             @ApiResponse(responseCode = "4000", description = "파라메터 인자값이 정상적이지 않습니다.")
     })
     public ResponseEntity modifyAdminUser (@RequestBody @Valid ModifyAdminUserRequest modifyAdminUserRequest, HttpServletRequest httpServletRequest) {
-        loginService.modifyAdminUser(modifyAdminUserRequest, httpServletRequest);
+        superAdminService.modifyAdminUser(modifyAdminUserRequest, httpServletRequest);
         return ResponseEntity.ok().build();
     }
 
@@ -76,7 +77,7 @@ public class SuperAdminController {
             @ApiResponse(responseCode = "4000", description = "파라메터 인자값이 정상적이지 않습니다.")
     })
     public ResponseEntity getAdminUser(@PathVariable("id") Long id, HttpServletRequest httpServletRequest) {
-        AdminUserDetailResponse userDetails = loginService.loadUserById(id, httpServletRequest);
+        AdminUserDetailResponse userDetails = superAdminService.loadUserById(id, httpServletRequest);
         return new ResponseEntity(userDetails, HttpStatus.OK);
     }
 
@@ -89,7 +90,7 @@ public class SuperAdminController {
             @ApiResponse(responseCode = "4000", description = "파라메터 인자값이 정상적이지 않습니다.")
     })
     public ResponseEntity getAdminUserList(@RequestParam(required = false) final String search, final AdminUserSearchType type, final Pageable pageable, HttpServletRequest httpServletRequest) {
-        AdminUserListResponse response = loginService.getAdminUserAll(search, pageable, type, httpServletRequest);
+        AdminUserListResponse response = superAdminService.getAdminUserAll(search, pageable, type, httpServletRequest);
         return new ResponseEntity(response, HttpStatus.OK);
     }
 
@@ -100,7 +101,7 @@ public class SuperAdminController {
             @ApiResponse(responseCode = "4000", description = "파라메터 인자값이 정상적이지 않습니다.")
     })
     public ResponseEntity idVerification (@PathVariable("adminId") String adminId) {
-        Map<String, Boolean> result = loginService.verification(adminId);
+        Map<String, Boolean> result = superAdminService.verification(adminId);
         return new ResponseEntity(result, HttpStatus.OK);
     }
 }
