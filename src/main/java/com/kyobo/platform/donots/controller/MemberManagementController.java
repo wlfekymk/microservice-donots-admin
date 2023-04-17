@@ -16,6 +16,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDate;
 import java.util.Map;
 
@@ -31,9 +32,6 @@ public class MemberManagementController {
             @ApiResponse(responseCode = "404", description = "Not Found")
     })
     @GetMapping("/v1/members/with-account")
-    // Parameter로 받을 때 400 Bad Request 발생하는 것을 확인한 형태:
-    // @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDateTime someDateTime
-    // @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDateTime someDateTime
     public ResponseEntity<?> findAllMembersWithAccount(ParentAccountSearchConditionAndTerm searchConditionAndTerm, String joinFrom, String joinTo, Pageable pageable) {
         log.info("MemberManagementController.findAllMembersWithAccount");
         log.info("joinFrom: "+ joinFrom);
@@ -52,12 +50,10 @@ public class MemberManagementController {
             @ApiResponse(responseCode = "404", description = "Not Found")
     })
     @GetMapping("/v1/members/with-account/{parentKey}/details")
-    public ResponseEntity<?> findParentAccountDetails(@PathVariable Long parentKey) throws Exception {
+    public ResponseEntity<?> findParentAccountDetails(@PathVariable Long parentKey, HttpServletRequest httpServletRequest) throws Exception {
         log.info("MemberManagementController.findParentAccountDetails");
         // TODO 예외처리
-
-        ParentAccountDetailsResponse parentAccountDetailsResponse = memberManagementService.findParentAccountDetails(parentKey);
-
+        ParentAccountDetailsResponse parentAccountDetailsResponse = memberManagementService.findParentAccountDetails(parentKey, httpServletRequest);
         return ResponseEntity.ok(parentAccountDetailsResponse);
     }
 
@@ -67,7 +63,7 @@ public class MemberManagementController {
             @ApiResponse(responseCode = "400", description = "Bad Request")
     })
     @PutMapping("/v1/members/{key}/type")
-    public ResponseEntity modifyParentType(@PathVariable Long key, @RequestBody Map<String, ParentType> parentTypeMap) {
+    public ResponseEntity modifyParentType(@PathVariable Long key, @RequestBody Map<String, ParentType> parentTypeMap, HttpServletRequest httpServletRequest) {
         log.info("ParentController.modifyParentType");
 
         if (parentTypeMap == null)
@@ -78,7 +74,7 @@ public class MemberManagementController {
         if (parentType == null)
             throw new RequestBodyEmptyException("RequestBody is empty");
 
-        memberManagementService.modifyParentType(key, parentType);
+        memberManagementService.modifyParentType(key, parentType, httpServletRequest);
 
         return ResponseEntity.ok().build();
     }
