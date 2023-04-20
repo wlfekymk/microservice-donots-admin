@@ -38,7 +38,6 @@ import java.util.stream.Collectors;
 @Slf4j
 public class SuperAdminService {
     private final AdminUserRepository adminUserRepository;
-
     private final AdminAccessPermissionRepository adminAccessPermissionRepository;
     private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
     private final RedisTemplate<String, Object> redisTemplate;
@@ -202,6 +201,10 @@ public class SuperAdminService {
      * @param permissionCategory
      */
     private void regeditAdminAccessPermission(String adminId, PermissionCategory permissionCategory, String regeditAdminId) {
+        log.info("adminId : " + adminId);
+        log.info("permissionCategory : " + permissionCategory);
+        log.info("regeditAdminId : " + regeditAdminId);
+
         adminAccessPermissionRepository.save(
                 AdminAccessPermission.builder()
                         .adminId(adminId)
@@ -210,6 +213,8 @@ public class SuperAdminService {
                         .createdDate(LocalDateTime.now())
                         .build()
         );
+
+        log.info("save fin");
     }
 
 }
