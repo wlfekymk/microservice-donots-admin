@@ -49,6 +49,7 @@ public class SuperAdminService {
      * @param httpServletRequest
      * @return
      */
+
     @Transactional
     public AdminUserResponse createAdminUser(CreateAdminUserRequest createAdminUserRequest, HttpServletRequest httpServletRequest) {
         Long adminUserKeyFromSession = SessionUtil.getGlobalCustomSessionLongAttribute("id", httpServletRequest, redisTemplate);
@@ -63,7 +64,7 @@ public class SuperAdminService {
         LocalDateTime now = LocalDateTime.now();
 
         // 유저정보 저장
-        adminUserRepository.save(
+        adminUser = adminUserRepository.save(
                 AdminUser.builder()
                         .adminId(createAdminUserRequest.getAdminId())
                         .password(encoder.encode(createAdminUserRequest.getPassword()))
@@ -83,11 +84,8 @@ public class SuperAdminService {
                         .lastSignInDate(now)
                         .build()
         );
-
-        log.info("");
         //ADMIN 권한 이력 관리
-        regeditAdminAccessPermission(createAdminUserRequest.getAdminId(), PermissionCategory.C, regeditAdminId);
-
+        regeditAdminAccessPermission(adminUser.getAdminId(), PermissionCategory.C, regeditAdminId);
         return new AdminUserResponse(adminUser);
     }
 
@@ -200,7 +198,7 @@ public class SuperAdminService {
      * @param adminId
      * @param permissionCategory
      */
-    private void regeditAdminAccessPermission(String adminId, PermissionCategory permissionCategory, String regeditAdminId) {
+     private void regeditAdminAccessPermission(String adminId, PermissionCategory permissionCategory, String regeditAdminId) {
         log.info("adminId : " + adminId);
         log.info("permissionCategory : " + permissionCategory);
         log.info("regeditAdminId : " + regeditAdminId);
