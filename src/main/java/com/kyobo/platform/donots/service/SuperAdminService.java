@@ -199,9 +199,6 @@ public class SuperAdminService {
      * @param permissionCategory
      */
      private void regeditAdminAccessPermission(String adminId, PermissionCategory permissionCategory, String regeditAdminId) {
-        log.info("adminId : " + adminId);
-        log.info("permissionCategory : " + permissionCategory);
-        log.info("regeditAdminId : " + regeditAdminId);
 
         adminAccessPermissionRepository.save(
                 AdminAccessPermission.builder()
@@ -212,7 +209,6 @@ public class SuperAdminService {
                         .build()
         );
 
-        log.info("save fin");
     }
 
 }
