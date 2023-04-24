@@ -28,8 +28,26 @@ public class AdminAccessPermission {
     @Column(name = "ADMIN_ID")
     private String adminId;
 
+    @Column(name = "ADMIN_USER_NAME")
+    private String adminUserName;
+
+    @Column(name = "ADMIN_USER_NUMBER")
+    private String adminUserNumber;
+
+    @Column(name = "DEPARTMENT_NAME")
+    private String departmentName;
+
     @Column(name = "REGEDIT_ADMIN_ID")
     private String regeditAdminId;
+
+    @Column(name = "REGEDIT_ADMIN_USER_NAME")
+    private String regeditAdminUserName;
+
+    @Column(name = "REGEDIT_ADMIN_USER_NUMBER")
+    private String regeditAdminUserNumber;
+
+    @Column(name = "CHANGE_PERMISSION")
+    private String changePermission;
 
     @Column(name = "CREATE_DATE")
     private LocalDateTime createdDate;

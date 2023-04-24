@@ -64,8 +64,8 @@ public class ControllerExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity(exceptionResponse, HttpStatus.BAD_REQUEST);
     }
 
-    @ExceptionHandler(PasswordFiveCountNotMatchException.class)
-    public final ResponseEntity<Object> passwordFiveCountNotMatchException(BusinessException ex, WebRequest request) {
+    @ExceptionHandler(PasswordTenCountNotMatchException.class)
+    public final ResponseEntity<Object> passwordTenCountNotMatchException(BusinessException ex, WebRequest request) {
         ExceptionResponse exceptionResponse =
                 new ExceptionResponse(new Date(), ex, request.getDescription(false));
         return new ResponseEntity(exceptionResponse, HttpStatus.BAD_REQUEST);

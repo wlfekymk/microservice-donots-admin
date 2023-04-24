@@ -42,24 +42,39 @@ public class LoginService implements UserDetailsService {
             throw new PasswordIncludePersonalInformation();
         if (changePasswordRequest.getNewPassword().contains(adminUser.getPhoneNumber()))
             throw new PasswordIncludePersonalInformation();
+        // 패스워드 변경
         adminUser.updatePassword(encoder.encode(changePasswordRequest.getNewPassword()));
+        if(changePasswordRequest.getResetType().equals(ResetType.LOCK))
+            adminUser.updateIsAccountLockPasswordChangeFlag(false);
     }
 
-    @Transactional
+
     public AdminUserResponse signIn(SignInRequest signInRequest) {
         AdminUser adminUser = adminUserRepository.findByAdminId(signInRequest.getAdminId());
         if (adminUser == null)
             throw new AdminUserNotFoundException();
-        adminUser.increaseCount(adminUser.getLoginCount());
+        adminUser.updateIncreaseLoginCount(adminUser.getLoginCount());
         if (!encoder.matches(signInRequest.getPassword(), adminUser.getPassword())) {
+            adminUser.updateIncreaseLoginFailedCount(adminUser.getLoginFailedCount());
+
+            if (adminUser.getLoginFailedCount() >= 10) {
+                adminUser.updateIsAccountLockPasswordChangeFlag(true);
+                regeditAdminSystemLog(adminUser, false);
+                throw new PasswordTenCountNotMatchException();
+            }
             // 시스템 접근 로그 실패 저장
             regeditAdminSystemLog(adminUser, false);
-            log.info("Lock status : " + adminUser.isAccountNonLocked());
-            if (adminUser.getLoginCount() == 5) {
-                throw new PasswordFiveCountNotMatchException();
-            }
             throw new PasswordNotMatchException();
         }
+
+        //로그인 성공해도 기존에 Login 실패 이력이 있으면 에러
+        if (adminUser.getLoginFailedCount() >= 10) {
+            regeditAdminSystemLog(adminUser, false);
+            throw new PasswordTenCountNotMatchException();
+        }
+
+        // 로그인 성공시 로그인 실패 카운트 리셋
+        adminUser.updateLoginFailedCountReset();
         adminUser.updateSessionId(adminUser.getSessionId());
         // 시스템 접근 로그 성공 저장
         regeditAdminSystemLog(adminUser, true);

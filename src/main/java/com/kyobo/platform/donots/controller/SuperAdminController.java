@@ -3,6 +3,7 @@ package com.kyobo.platform.donots.controller;
 import com.kyobo.platform.donots.model.dto.request.AdminUserSearchType;
 import com.kyobo.platform.donots.model.dto.request.CreateAdminUserRequest;
 import com.kyobo.platform.donots.model.dto.request.ModifyAdminUserRequest;
+import com.kyobo.platform.donots.model.dto.request.PasswordUnlockRequest;
 import com.kyobo.platform.donots.model.dto.response.AdminUserDetailResponse;
 import com.kyobo.platform.donots.model.dto.response.AdminUserListResponse;
 import com.kyobo.platform.donots.model.dto.response.AdminUserResponse;
@@ -63,7 +64,7 @@ public class SuperAdminController {
             @ApiResponse(responseCode = "200", description = "성공"),
             @ApiResponse(responseCode = "4000", description = "파라메터 인자값이 정상적이지 않습니다.")
     })
-    public ResponseEntity modifyAdminUser (@RequestBody @Valid ModifyAdminUserRequest modifyAdminUserRequest, HttpServletRequest httpServletRequest) {
+    public ResponseEntity modifyAdminUser(@RequestBody @Valid ModifyAdminUserRequest modifyAdminUserRequest, HttpServletRequest httpServletRequest) {
         superAdminService.modifyAdminUser(modifyAdminUserRequest, httpServletRequest);
         return ResponseEntity.ok().build();
     }
@@ -100,8 +101,20 @@ public class SuperAdminController {
             @ApiResponse(responseCode = "200", description = "성공"),
             @ApiResponse(responseCode = "4000", description = "파라메터 인자값이 정상적이지 않습니다.")
     })
-    public ResponseEntity idVerification (@PathVariable("adminId") String adminId) {
+    public ResponseEntity idVerification(@PathVariable("adminId") String adminId) {
         Map<String, Boolean> result = superAdminService.verification(adminId);
         return new ResponseEntity(result, HttpStatus.OK);
     }
+
+    @PostMapping("/v1/password/unlock")
+    @Operation(summary = "관리자 ID 정보 변경  ", description = "관리자 패스워드 잠금 해제")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "성공"),
+            @ApiResponse(responseCode = "4000", description = "파라메터 인자값이 정상적이지 않습니다.")
+    })
+    public ResponseEntity passwordUnlock(@RequestBody @Valid PasswordUnlockRequest passwordUnlockRequest, HttpServletRequest httpServletRequest) {
+        superAdminService.passwordUnlock(passwordUnlockRequest, httpServletRequest);
+        return ResponseEntity.ok().build();
+    }
+
 }

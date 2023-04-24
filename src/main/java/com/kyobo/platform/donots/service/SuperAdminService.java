@@ -3,10 +3,12 @@ package com.kyobo.platform.donots.service;
 import com.kyobo.platform.donots.common.exception.AdminUserNotFoundException;
 import com.kyobo.platform.donots.common.exception.AlreadyRegisteredIdException;
 import com.kyobo.platform.donots.common.exception.InsufficientPermissionException;
+import com.kyobo.platform.donots.common.exception.PasswordNotMatchException;
 import com.kyobo.platform.donots.common.util.SessionUtil;
 import com.kyobo.platform.donots.model.dto.request.AdminUserSearchType;
 import com.kyobo.platform.donots.model.dto.request.CreateAdminUserRequest;
 import com.kyobo.platform.donots.model.dto.request.ModifyAdminUserRequest;
+import com.kyobo.platform.donots.model.dto.request.PasswordUnlockRequest;
 import com.kyobo.platform.donots.model.dto.response.AdminUserDetailResponse;
 import com.kyobo.platform.donots.model.dto.response.AdminUserListResponse;
 import com.kyobo.platform.donots.model.dto.response.AdminUserResponse;
@@ -27,6 +29,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
@@ -84,8 +87,10 @@ public class SuperAdminService {
                         .lastSignInDate(now)
                         .build()
         );
+
+        AdminUser regeditAdmin = adminUserRepository.findByAdminId(regeditAdminId);
         //ADMIN 권한 이력 관리
-        regeditAdminAccessPermission(adminUser.getAdminId(), PermissionCategory.C, regeditAdminId);
+        regeditAdminAccessPermission(adminUser, regeditAdmin, PermissionCategory.C, createAdminUserRequest.getRole() + "으로 Role 생성");
         return new AdminUserResponse(adminUser);
     }
 
@@ -105,8 +110,10 @@ public class SuperAdminService {
         if (adminUser == null)
             throw new AdminUserNotFoundException();
         adminUser.updateModifyAdminUser(modifyAdminUserRequest);
+
+        AdminUser regeditAdmin = adminUserRepository.findByAdminId(regeditAdminId);
         //ADMIN 권한 이력 관리
-        regeditAdminAccessPermission(adminUser.getAdminId(), PermissionCategory.U, regeditAdminId);
+        regeditAdminAccessPermission(adminUser, regeditAdmin, PermissionCategory.U, modifyAdminUserRequest.getRole() + "으로 Role 변경");
         return new AdminUserResponse(adminUser);
     }
 
@@ -122,8 +129,9 @@ public class SuperAdminService {
         checkIsAdminUserPermitted(adminUserKeyFromSession);
         AdminUser adminUser = adminUserRepository.findById(id).orElseThrow(() -> new AdminUserNotFoundException());
         adminUserRepository.deleteById(id);
+        AdminUser regeditAdmin = adminUserRepository.findByAdminId(regeditAdminId);
         //ADMIN 권한 이력 관리
-        regeditAdminAccessPermission(adminUser.getAdminId(), PermissionCategory.D, regeditAdminId);
+        regeditAdminAccessPermission(adminUser, regeditAdmin, PermissionCategory.D, "");
     }
 
     public AdminUserListResponse getAdminUserAll(String search, Pageable pageable, AdminUserSearchType type, HttpServletRequest httpServletRequest) {
@@ -163,14 +171,14 @@ public class SuperAdminService {
         String regeditAdminId = SessionUtil.getGlobalCustomSessionStringAttribute("adminId", httpServletRequest, redisTemplate);
         checkIsAdminUserPermitted(adminUserKeyFromSession);
         AdminUser adminUser = adminUserRepository.findById(id).orElseThrow(() -> new AdminUserNotFoundException());
+        AdminUser regeditAdmin = adminUserRepository.findByAdminId(regeditAdminId);
         //ADMIN 권한 이력 관리
-        regeditAdminAccessPermission(adminUser.getAdminId(), PermissionCategory.R, regeditAdminId);
+        regeditAdminAccessPermission(adminUser, regeditAdmin, PermissionCategory.R, "");
         return new AdminUserDetailResponse(adminUser);
     }
 
     /**
      * 관리자 아이디 가입여부 확인
-     *
      * @param adminId
      * @return
      */
@@ -183,32 +191,66 @@ public class SuperAdminService {
 
     /**
      * SUPER_ADMIN 권한인지 체크
-     *
-     * @param adminUserKeyFromSession
+     * @param adminUserKey
      */
-    private void checkIsAdminUserPermitted(Long adminUserKeyFromSession) {
-        AdminUser foundAdminUser = adminUserRepository.findById(adminUserKeyFromSession).orElseThrow(() -> new AdminUserNotFoundException());
-        if (!"SUPER_ADMIN".equals(foundAdminUser.getRole()))
+    private void checkIsAdminUserPermitted(Long adminUserKey) {
+        AdminUser adminUser = adminUserRepository.findById(adminUserKey).orElseThrow(() -> new AdminUserNotFoundException());
+        if (!"SUPER_ADMIN".equals(adminUser.getRole()))
             throw new InsufficientPermissionException();
     }
 
     /**
-     * 권한 부여 이력 등록
      *
-     * @param adminId
+     * @param adminUser
+     * @param regeditAdminUser
      * @param permissionCategory
+     * @param changePermission
      */
-     private void regeditAdminAccessPermission(String adminId, PermissionCategory permissionCategory, String regeditAdminId) {
-
+    private void regeditAdminAccessPermission(AdminUser adminUser, AdminUser regeditAdminUser, PermissionCategory permissionCategory, String changePermission ) {
         adminAccessPermissionRepository.save(
                 AdminAccessPermission.builder()
-                        .adminId(adminId)
-                        .regeditAdminId(regeditAdminId)
+                        .adminId(adminUser.getAdminId())
+                        .adminUserName(adminUser.getAdminUserName())
+                        .adminUserNumber(adminUser.getAdminUserNumber())
+                        .departmentName(adminUser.getDepartmentName())
+                        .regeditAdminId(regeditAdminUser.getRegeditAdminId())
+                        .regeditAdminUserName(regeditAdminUser.getAdminUserName())
+                        .regeditAdminUserNumber(regeditAdminUser.getAdminUserNumber())
                         .permissionCategory(permissionCategory)
+                        .changePermission(changePermission)
                         .createdDate(LocalDateTime.now())
                         .build()
         );
-
     }
 
+    /**
+     * 패스워드 잠금 해제
+     * @param passwordUnlockRequest
+     * @param httpServletRequest
+     */
+    @Transactional
+    public void passwordUnlock(PasswordUnlockRequest passwordUnlockRequest, HttpServletRequest httpServletRequest) {
+        String regeditAdminId = SessionUtil.getGlobalCustomSessionStringAttribute("adminId", httpServletRequest, redisTemplate);
+        log.info("regeditAdminId : " + regeditAdminId);
+        AdminUser regeditAdminUser = adminUserRepository.findByAdminId(regeditAdminId);
+        if (regeditAdminUser == null)
+            throw new AdminUserNotFoundException();
+
+        if (!encoder.matches(passwordUnlockRequest.getRegeditAdminPassword(), regeditAdminUser.getPassword())) {
+            throw new PasswordNotMatchException();
+        }
+
+        AdminUser adminUser = adminUserRepository.findByAdminId(passwordUnlockRequest.getAdminId());
+
+        log.info("regeditAdminId : " + passwordUnlockRequest.getAdminId());
+
+        if (adminUser == null)
+            throw new AdminUserNotFoundException();
+
+        adminUser.updateLoginFailedCountReset();
+        adminUser.updatePassword(encoder.encode("kyobo11!"));
+
+        //ADMIN 권한 이력 관리
+        regeditAdminAccessPermission(adminUser, regeditAdminUser, PermissionCategory.U, "Password Unlock");
+    }
 }

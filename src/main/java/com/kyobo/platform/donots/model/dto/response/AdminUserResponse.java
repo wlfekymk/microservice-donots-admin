@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 @Getter
 public class AdminUserResponse {
 
-    public AdminUserResponse(){
+    public AdminUserResponse() {
     }
 
     @Schema(description = "어드민 고유 번호")
@@ -54,8 +54,10 @@ public class AdminUserResponse {
     private String headerInfo;
 
     @Schema(description = "3개월 패스워드 변경 flag")
-    private Boolean isPasswordChangeFlag;
+    private Boolean isThreeMonthPasswordChangeFlag;
 
+    @Schema(description = "계정잠김 변경 flag")
+    private Boolean isAccountLockPasswordChangeFlag;
     @Schema(description = "마지막 접속 일")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime lastSignInDate;
@@ -68,7 +70,7 @@ public class AdminUserResponse {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createdDate;
 
-    public AdminUserResponse(AdminUser adminUser)  {
+    public AdminUserResponse(AdminUser adminUser) {
         MarkingUtil markingUtil = new MarkingUtil();
         this.adminId = adminUser.getAdminId();
         this.adminUserName = markingUtil.nameMasking(adminUser.getAdminUserName());
@@ -87,12 +89,13 @@ public class AdminUserResponse {
         this.createdDate = adminUser.getCreatedDate();
         this.headerInfo = adminUser.getSessionId();
 
-        if(adminUser.getLoginCount()==0)
-            this.isPasswordChangeFlag = true;
+        if (adminUser.getLoginCount() == 0)
+            this.isThreeMonthPasswordChangeFlag = true;
         else if (adminUser.getLastPasswordChangeDate().plusMonths(3).isBefore(LocalDateTime.now()))
-            this.isPasswordChangeFlag = true;
+            this.isThreeMonthPasswordChangeFlag = true;
         else
-            this.isPasswordChangeFlag = false;
+            this.isThreeMonthPasswordChangeFlag = false;
 
+        this.isAccountLockPasswordChangeFlag = adminUser.isAccountLockPasswordChangeFlag();
     }
 }
