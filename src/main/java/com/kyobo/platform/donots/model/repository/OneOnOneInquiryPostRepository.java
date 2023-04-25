@@ -1,6 +1,6 @@
-package com.kyobo.platform.donots.oneononeinquiry.repository;
+package com.kyobo.platform.donots.model.repository;
 
-import com.kyobo.platform.donots.oneononeinquiry.entity.OneOnOneInquiryPost;
+import com.kyobo.platform.donots.model.entity.OneOnOneInquiryPost;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

@@ -19,28 +19,28 @@ public class CorsFilter implements Filter {
         HttpServletResponse response = (HttpServletResponse) res;
         HttpServletRequest request = (HttpServletRequest) req;
 
-        log.info("RemoteAddr: "+ request.getRemoteAddr());
-        log.info("RemoteHost: "+ request.getRemoteHost());
-        log.info("RemotePort: "+ request.getRemotePort());
-        log.info("RemoteUser: "+ request.getRemoteUser());
-        log.info("RequestURI: "+ request.getRequestURI());
-        log.info("RequestURL: "+ request.getRequestURL());
-        log.info("ServerName: "+ request.getServerName());
-        log.info("ServerPort: "+ request.getServerPort());
+//        log.info("RemoteAddr: "+ request.getRemoteAddr());
+//        log.info("RemoteHost: "+ request.getRemoteHost());
+//        log.info("RemotePort: "+ request.getRemotePort());
+//        log.info("RemoteUser: "+ request.getRemoteUser());
+//        log.info("RequestURI: "+ request.getRequestURI());
+//        log.info("RequestURL: "+ request.getRequestURL());
+//        log.info("ServerName: "+ request.getServerName());
+//        log.info("ServerPort: "+ request.getServerPort());
 
-        Enumeration<String> parameterNames = request.getParameterNames();
-        log.info("HttpServletRequest.parameters are as follows if any:");
-        while (parameterNames.hasMoreElements()) {
-            String currentElem = parameterNames.nextElement();
-            log.info(currentElem + ": " + request.getParameter(currentElem.toString()));
-        }
-
-        Enumeration<String> headerNames = request.getHeaderNames();
-        log.info("HttpServletRequest.headers are as follows if any:");
-        while (headerNames.hasMoreElements()) {
-            String currentElem = headerNames.nextElement();
-            log.info(currentElem + ": " + request.getHeader(currentElem.toString()));
-        }
+//        Enumeration<String> parameterNames = request.getParameterNames();
+//        log.info("HttpServletRequest.parameters are as follows if any:");
+//        while (parameterNames.hasMoreElements()) {
+//            String currentElem = parameterNames.nextElement();
+//            log.info(currentElem + ": " + request.getParameter(currentElem.toString()));
+//        }
+//
+//        Enumeration<String> headerNames = request.getHeaderNames();
+//        log.info("HttpServletRequest.headers are as follows if any:");
+//        while (headerNames.hasMoreElements()) {
+//            String currentElem = headerNames.nextElement();
+//            log.info(currentElem + ": " + request.getHeader(currentElem.toString()));
+//        }
 
         response.setHeader("Access-Control-Allow-Origin", "*");
         response.setHeader("Access-Control-Allow-Credentials", "true");

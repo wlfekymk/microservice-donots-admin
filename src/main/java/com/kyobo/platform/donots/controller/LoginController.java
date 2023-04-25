@@ -39,9 +39,7 @@ public class LoginController {
             @ApiResponse(responseCode = "5000", description = "패스워드가 맞지 않습니다")
     })
     public ResponseEntity changePassword(@RequestBody @Valid ChangePasswordRequest changePasswordRequest, HttpServletRequest httpServletRequest) {
-
         String adminIdFromSession = SessionUtil.getGlobalCustomSessionStringAttribute("adminId", httpServletRequest, redisTemplate);
-
         loginService.changePasswordRequest(changePasswordRequest, adminIdFromSession);
         return ResponseEntity.ok().build();
     }
@@ -56,7 +54,6 @@ public class LoginController {
             @ApiResponse(responseCode = "5000", description = "패스워드가 맞지 않습니다")
     })
     public ResponseEntity signIn(@RequestBody @Valid SignInRequest signInRequest) {
-
         AdminUserResponse result = loginService.signIn(signInRequest);
         return new ResponseEntity(result, HttpStatus.OK);
     }
@@ -70,9 +67,7 @@ public class LoginController {
             @ApiResponse(responseCode = "5000", description = "패스워드가 맞지 않습니다")
     })
     public ResponseEntity passwordInitialization(HttpServletRequest httpServletRequest) {
-
         Long adminUserKeyFromSession = SessionUtil.getGlobalCustomSessionLongAttribute("id", httpServletRequest, redisTemplate);
-
         loginService.passwordInitialization(adminUserKeyFromSession);
         return ResponseEntity.ok().build();
     }

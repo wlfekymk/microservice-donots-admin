@@ -1,18 +1,15 @@
 package com.kyobo.platform.donots.service;
 
-import com.amazonaws.services.xray.model.Http;
 import com.kyobo.platform.donots.common.exception.*;
 import com.kyobo.platform.donots.common.util.SessionUtil;
 import com.kyobo.platform.donots.model.dto.request.*;
-import com.kyobo.platform.donots.model.dto.response.AdminUserDetailResponse;
-import com.kyobo.platform.donots.model.dto.response.AdminUserListResponse;
 import com.kyobo.platform.donots.model.dto.response.AdminUserResponse;
+import com.kyobo.platform.donots.model.entity.AdminSystemAccessLog;
 import com.kyobo.platform.donots.model.entity.AdminUser;
+import com.kyobo.platform.donots.model.repository.AdminSystemAccessLogRepository;
 import com.kyobo.platform.donots.model.repository.AdminUserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -21,13 +18,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.annotation.PostConstruct;
-import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 
 @Service
@@ -36,174 +27,59 @@ import java.util.stream.Collectors;
 public class LoginService implements UserDetailsService {
 
     private final AdminUserRepository adminUserRepository;
+    private final AdminSystemAccessLogRepository adminSystemAccessLogRepository;
     private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
-
     private final RedisTemplate<String, Object> redisTemplate;
-
-    @PostConstruct
-    public void initialize(){
-        AdminUser adminUser = adminUserRepository.findByAdminId("superkyobo");
-        if(adminUser == null) {
-            LocalDateTime now = LocalDateTime.now();
-            adminUser = AdminUser.builder()
-                .adminId("superkyobo")
-                .password(encoder.encode("kyobo11!"))
-                .adminUserName("슈퍼유저")
-                .adminUserNumber("99999999")
-                .departmentName("플랫폼추진2팀")
-                .phoneNumber("010-1234-5678")
-                .regeditAdminId("superkyobo")
-                .email("kyobo@help.com")
-                .reasonsForAuthorization("")
-                .role("SUPER_ADMIN")
-                .attachImageUrl("")
-                .memo("")
-                .loginCount(0l)
-                .lastPasswordChangeDate(now)
-                .createdDate(now)
-                .lastSignInDate(now)
-                .build();
-            adminUserRepository.save(adminUser);
-        }
-    }
-    public AdminUserResponse createAdminUser(CreateAdminUserRequest createAdminUserRequest, HttpServletRequest httpServletRequest) {
-
-        Long adminUserKeyFromSession = SessionUtil.getGlobalCustomSessionLongAttribute("id", httpServletRequest, redisTemplate);
-        checkIsAdminUserPermitted(adminUserKeyFromSession);
-
-        // TODO existBy로 중복검사 후 새로 선언하여 받는다
-        AdminUser adminUserToCreate = adminUserRepository.findByAdminId(createAdminUserRequest.getAdminId());
-        if(adminUserToCreate != null)
-            throw new AlreadyRegisteredIdException();
-
-        LocalDateTime now = LocalDateTime.now();
-        String adminIdFromSession = SessionUtil.getGlobalCustomSessionStringAttribute("adminId", httpServletRequest, redisTemplate);
-        adminUserToCreate = AdminUser.builder()
-                .adminId(createAdminUserRequest.getAdminId())
-                .password(encoder.encode(createAdminUserRequest.getPassword()))
-                .adminUserName(createAdminUserRequest.getAdminUserName())
-                .adminUserNumber(createAdminUserRequest.getAdminUserNumber())
-                .departmentName(createAdminUserRequest.getDepartmentName())
-                .phoneNumber(createAdminUserRequest.getPhoneNumber())
-                .regeditAdminId(adminIdFromSession)
-                .email(createAdminUserRequest.getEmail())
-                .reasonsForAuthorization(createAdminUserRequest.getReasonsForAuthorization())
-                .role(createAdminUserRequest.getRole())
-                .attachImageUrl(createAdminUserRequest.getAttachImageUrl())
-                .memo(createAdminUserRequest.getMemo())
-                .loginCount(0l)
-                .lastPasswordChangeDate(now)
-                .createdDate(now)
-                .lastSignInDate(now)
-                .build();
-        adminUserRepository.save(adminUserToCreate);
-
-        return new AdminUserResponse(adminUserToCreate);
-    }
 
     @Transactional
     public void changePasswordRequest(ChangePasswordRequest changePasswordRequest, String adminId) {
         AdminUser adminUser = adminUserRepository.findByAdminId(adminId);
-        if(adminUser == null)
+        if (adminUser == null)
             throw new AdminUserNotFoundException();
-        if(!encoder.matches(changePasswordRequest.getPassword(), adminUser.getPassword()))
+        if (!encoder.matches(changePasswordRequest.getPassword(), adminUser.getPassword()))
             throw new PasswordNotMatchException();
-        if(changePasswordRequest.getNewPassword().contains(adminId))
+        if (changePasswordRequest.getNewPassword().contains(adminId))
             throw new PasswordIncludePersonalInformation();
-        if(changePasswordRequest.getNewPassword().contains(adminUser.getPhoneNumber()))
+        if (changePasswordRequest.getNewPassword().contains(adminUser.getPhoneNumber()))
             throw new PasswordIncludePersonalInformation();
+        // 패스워드 변경
         adminUser.updatePassword(encoder.encode(changePasswordRequest.getNewPassword()));
-    }
-
-    public Map<String, Boolean> verification(String adminId) {
-        Map<String, Boolean> result = new HashMap<>();
-        boolean verification = adminUserRepository.existsByAdminId(adminId);
-        result.put("verification", verification);
-        return result;
-    }
-
-    @Transactional
-    public void deleteAdminUser(Long id, HttpServletRequest httpServletRequest) {
-
-        Long adminUserKeyFromSession = SessionUtil.getGlobalCustomSessionLongAttribute("id", httpServletRequest, redisTemplate);
-        checkIsAdminUserPermitted(adminUserKeyFromSession);
-
-        adminUserRepository.deleteById(id);
-    }
-
-    @Transactional
-    public AdminUserResponse modifyAdminUser(ModifyAdminUserRequest modifyAdminUserRequest, HttpServletRequest httpServletRequest){
-
-        Long adminUserKeyFromSession = SessionUtil.getGlobalCustomSessionLongAttribute("id", httpServletRequest, redisTemplate);
-        checkIsAdminUserPermitted(adminUserKeyFromSession);
-
-        AdminUser adminUser = adminUserRepository.findByAdminId(modifyAdminUserRequest.getAdminId());
-
-        if(adminUser == null)
-            throw new AdminUserNotFoundException();
-
-        adminUser.updateModifyAdminUser(modifyAdminUserRequest);
-
-        // TODO 레코드가 커밋되지 않았는데도 Reponse를 할 가능성이 있음
-        return new AdminUserResponse(adminUser);
+        if(changePasswordRequest.getResetType().equals(ResetType.LOCK))
+            adminUser.updateIsAccountLockPasswordChangeFlag(false);
     }
 
 
-    @Transactional
     public AdminUserResponse signIn(SignInRequest signInRequest) {
         AdminUser adminUser = adminUserRepository.findByAdminId(signInRequest.getAdminId());
-        if(adminUser == null)
+        if (adminUser == null)
             throw new AdminUserNotFoundException();
-        if(!encoder.matches(signInRequest.getPassword(), adminUser.getPassword()))
+        adminUser.updateIncreaseLoginCount(adminUser.getLoginCount());
+        if (!encoder.matches(signInRequest.getPassword(), adminUser.getPassword())) {
+            adminUser.updateIncreaseLoginFailedCount(adminUser.getLoginFailedCount());
+
+            if (adminUser.getLoginFailedCount() >= 10) {
+                adminUser.updateIsAccountLockPasswordChangeFlag(true);
+                regeditAdminSystemLog(adminUser, false);
+                throw new PasswordTenCountNotMatchException();
+            }
+            // 시스템 접근 로그 실패 저장
+            regeditAdminSystemLog(adminUser, false);
             throw new PasswordNotMatchException();
-        adminUser.increaseCount(adminUser.getLoginCount());
-        adminUser.updateSessionId(adminUser.getSessionId());
-
-        SessionUtil.populateGlobalCustomSession(redisTemplate, adminUser);
-
-        return new AdminUserResponse(adminUser);
-    }
-
-    public AdminUserResponse loadUserByAmdinId(String adminId) throws UsernameNotFoundException {
-        AdminUser adminUser = adminUserRepository.findByAdminId(adminId);
-        return new AdminUserResponse(adminUser);
-    }
-
-
-    public AdminUserDetailResponse loadUserById(Long id, HttpServletRequest httpServletRequest) throws UsernameNotFoundException {
-
-        Long adminUserKeyFromSession = SessionUtil.getGlobalCustomSessionLongAttribute("id", httpServletRequest, redisTemplate);
-        checkIsAdminUserPermitted(adminUserKeyFromSession);
-
-        AdminUser adminUser = adminUserRepository.findById(id).orElseThrow(()-> new AdminUserNotFoundException());
-        return new AdminUserDetailResponse(adminUser);
-    }
-    public AdminUserListResponse getAdminUserAll(String search, Pageable pageable, AdminUserSearchType type, HttpServletRequest httpServletRequest) {
-
-        Long adminUserKeyFromSession = SessionUtil.getGlobalCustomSessionLongAttribute("id", httpServletRequest, redisTemplate);
-        checkIsAdminUserPermitted(adminUserKeyFromSession);
-
-        Page<AdminUser> pageAdminUser;
-        if (type.equals(AdminUserSearchType.ADMIN_ID)) {
-            pageAdminUser = adminUserRepository.findByAdminIdContaining(search, pageable);
-        } else if(type.equals(AdminUserSearchType.ADMIN_ROLE)){
-            pageAdminUser = adminUserRepository.findByRole(search, pageable);
-        } else if(type.equals(AdminUserSearchType.REGEDIT_ADMIN_ID)) {
-            pageAdminUser = adminUserRepository.findByRegeditAdminIdContaining(search, pageable);
-        } else if(type.equals(AdminUserSearchType.ALL)) {
-            pageAdminUser = adminUserRepository.findAll(pageable);
-        } else {
-            pageAdminUser = adminUserRepository.findAll(pageable);
         }
 
+        //로그인 성공해도 기존에 Login 실패 이력이 있으면 에러
+        if (adminUser.getLoginFailedCount() >= 10) {
+            regeditAdminSystemLog(adminUser, false);
+            throw new PasswordTenCountNotMatchException();
+        }
 
-        List<AdminUserResponse> adminUserList = pageAdminUser.getContent().stream()
-                .map(m -> new AdminUserResponse(m))
-                .collect(Collectors.toList());
-
-        AdminUserListResponse response = new AdminUserListResponse(adminUserList, pageAdminUser.getTotalPages(), pageAdminUser.getTotalElements());
-
-        return response;
+        // 로그인 성공시 로그인 실패 카운트 리셋
+        adminUser.updateLoginFailedCountReset();
+        adminUser.updateSessionId(adminUser.getSessionId());
+        // 시스템 접근 로그 성공 저장
+        regeditAdminSystemLog(adminUser, true);
+        SessionUtil.populateGlobalCustomSession(redisTemplate, adminUser);
+        return new AdminUserResponse(adminUser);
     }
 
     @Override
@@ -213,13 +89,24 @@ public class LoginService implements UserDetailsService {
 
     @Transactional
     public void passwordInitialization(Long id) {
-        AdminUser adminUser = adminUserRepository.findById(id).orElseThrow(()-> new AdminUserNotFoundException());
+        AdminUser adminUser = adminUserRepository.findById(id).orElseThrow(() -> new AdminUserNotFoundException());
         adminUser.updateLastPasswordChangeDate();
     }
 
-    private void checkIsAdminUserPermitted(Long adminUserKeyFromSession) {
-        AdminUser foundAdminUser = adminUserRepository.findById(adminUserKeyFromSession).orElseThrow(() -> new AdminUserNotFoundException());
-        if (!"SUPER_ADMIN".equals(foundAdminUser.getRole()))
-            throw new InsufficientPermissionException();
+    /**
+     * 시스템 접근 로그
+     * @param adminUser
+     * @param loginFlag
+     */
+    private void regeditAdminSystemLog(AdminUser adminUser, Boolean loginFlag) {
+        adminSystemAccessLogRepository.save(
+                AdminSystemAccessLog.builder()
+                        .adminUserNumber(adminUser.getAdminUserNumber())
+                        .adminUserName(adminUser.getAdminUserName())
+                        .adminId(adminUser.getAdminId())
+                        .loginFlag(loginFlag)
+                        .accessDate(LocalDateTime.now())
+                        .build()
+        );
     }
 }

@@ -64,6 +64,12 @@ public class ControllerExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity(exceptionResponse, HttpStatus.BAD_REQUEST);
     }
 
+    @ExceptionHandler(PasswordTenCountNotMatchException.class)
+    public final ResponseEntity<Object> passwordTenCountNotMatchException(BusinessException ex, WebRequest request) {
+        ExceptionResponse exceptionResponse =
+                new ExceptionResponse(new Date(), ex, request.getDescription(false));
+        return new ResponseEntity(exceptionResponse, HttpStatus.BAD_REQUEST);
+    }
     @ExceptionHandler(AdminUserNotFoundException.class)
     public final ResponseEntity<Object> adminUserNotFoundException(BusinessException ex, WebRequest request) {
         ExceptionResponse exceptionResponse =

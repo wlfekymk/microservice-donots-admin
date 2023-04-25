@@ -1,14 +1,14 @@
-package com.kyobo.platform.donots.oneononeinquiry.service;
+package com.kyobo.platform.donots.service;
 
 import com.kyobo.platform.donots.common.exception.DataNotFoundException;
 import com.kyobo.platform.donots.common.exception.ParentNotFoundException;
 import com.kyobo.platform.donots.model.entity.service.parent.Parent;
 import com.kyobo.platform.donots.model.repository.service.parent.ParentRepository;
-import com.kyobo.platform.donots.oneononeinquiry.dto.request.AnswerRequest;
-import com.kyobo.platform.donots.oneononeinquiry.dto.response.OneOnOneInquiryPostDetailsListResponse;
-import com.kyobo.platform.donots.oneononeinquiry.dto.response.OneOnOneInquiryPostDetailsResponse;
-import com.kyobo.platform.donots.oneononeinquiry.entity.OneOnOneInquiryPost;
-import com.kyobo.platform.donots.oneononeinquiry.repository.OneOnOneInquiryPostRepository;
+import com.kyobo.platform.donots.model.dto.request.AnswerRequest;
+import com.kyobo.platform.donots.model.dto.response.OneOnOneInquiryPostDetailsListResponse;
+import com.kyobo.platform.donots.model.dto.response.OneOnOneInquiryPostDetailsResponse;
+import com.kyobo.platform.donots.model.entity.OneOnOneInquiryPost;
+import com.kyobo.platform.donots.model.repository.OneOnOneInquiryPostRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.DecoderException;

@@ -68,6 +68,12 @@ public class AdminUser implements UserDetails {
     @Column(name = "LOGIN_COUNT")
     private Long loginCount;
 
+    @Column(name = "LOGIN_FAILED_COUNT")
+    private Long loginFailedCount;
+
+    @Column(name = "IS_ACCOUNT_LOCK_PASSWORD_CHANGE_FLAG")
+    private boolean isAccountLockPasswordChangeFlag;
+
     @Column(name = "REASONS_FOR_AUTHORIZATION")
     private String reasonsForAuthorization;
 
@@ -117,9 +123,8 @@ public class AdminUser implements UserDetails {
     }
 
     public void updatePassword(String newPassword) {
-        LocalDateTime now = LocalDateTime.now();
         this.password = newPassword;
-        this.lastPasswordChangeDate = now;
+        this.lastPasswordChangeDate = LocalDateTime.now();
     }
 
     public void updateModifyAdminUser(ModifyAdminUserRequest modifyAdminUserRequest) {
@@ -147,8 +152,19 @@ public class AdminUser implements UserDetails {
         this.lastPasswordChangeDate = LocalDateTime.now();
     }
 
-    public void increaseCount(Long loginCount) {
+    public void updateIncreaseLoginCount(Long loginCount) {
         this.loginCount = loginCount + 1;
+    }
+
+    public void updateIncreaseLoginFailedCount(Long loginFailedCount) {
+        this.loginFailedCount = loginFailedCount + 1;
+    }
+    public void updateLoginFailedCountReset(){
+        this.loginFailedCount = 0l;
+    }
+
+    public void updateIsAccountLockPasswordChangeFlag(Boolean isAccountLockPasswordChangeFlag){
+        this.isAccountLockPasswordChangeFlag = isAccountLockPasswordChangeFlag;
     }
 }
 

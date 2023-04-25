@@ -21,6 +21,8 @@ public class SessionFilter implements Filter {
 
     private static final String REQUEST_URI_SIGN_IN = "/login/v1/signIn";
     private static final String REQUEST_URI_SWAGGER_KEYWORD = "/swagger-";
+
+    private static final String REQUEST_URI_ROOT = "/";
     private static final String REQUEST_URI_SWAGGER_API_DOCS_KEYWORD = "/api-docs";
 
     @Autowired
@@ -36,7 +38,8 @@ public class SessionFilter implements Filter {
 
         String requestURI = request.getRequestURI();
         // TODO 개발계도 외부노출되므로 막아야함
-        if (requestURI.equals(REQUEST_URI_SIGN_IN) || requestURI.contains(REQUEST_URI_SWAGGER_KEYWORD) || requestURI.contains(REQUEST_URI_SWAGGER_API_DOCS_KEYWORD)) {
+        if (requestURI.equals(REQUEST_URI_SIGN_IN) || requestURI.contains(REQUEST_URI_SWAGGER_KEYWORD)
+                || requestURI.contains(REQUEST_URI_SWAGGER_API_DOCS_KEYWORD)|| requestURI.contains(REQUEST_URI_ROOT)) {
             log.info("SessionFilter.doFilter End");
             chain.doFilter(req, res);
         }

@@ -1,6 +1,6 @@
-package com.kyobo.platform.donots.oneononeinquiry.dto.request;
+package com.kyobo.platform.donots.model.dto.request;
 
-import com.kyobo.platform.donots.oneononeinquiry.entity.OneOnOneInquiryPost;
+import com.kyobo.platform.donots.model.entity.OneOnOneInquiryPost;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 

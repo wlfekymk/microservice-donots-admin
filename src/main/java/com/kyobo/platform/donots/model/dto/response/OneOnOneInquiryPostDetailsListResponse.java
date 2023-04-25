@@ -1,4 +1,4 @@
-package com.kyobo.platform.donots.oneononeinquiry.dto.response;
+package com.kyobo.platform.donots.model.dto.response;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
