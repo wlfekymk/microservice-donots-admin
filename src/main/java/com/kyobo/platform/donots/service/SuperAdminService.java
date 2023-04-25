@@ -82,6 +82,7 @@ public class SuperAdminService {
                         .attachImageUrl(createAdminUserRequest.getAttachImageUrl())
                         .memo(createAdminUserRequest.getMemo())
                         .loginCount(0l)
+                        .loginFailedCount(0l)
                         .lastPasswordChangeDate(now)
                         .createdDate(now)
                         .lastSignInDate(now)
