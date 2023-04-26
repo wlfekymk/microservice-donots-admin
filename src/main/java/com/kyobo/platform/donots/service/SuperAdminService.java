@@ -232,7 +232,7 @@ public class SuperAdminService {
     @Transactional
     public void passwordUnlock(PasswordUnlockRequest passwordUnlockRequest, HttpServletRequest httpServletRequest) {
         String regeditAdminId = SessionUtil.getGlobalCustomSessionStringAttribute("adminId", httpServletRequest, redisTemplate);
-        log.info("regeditAdminId : " + regeditAdminId);
+
         AdminUser regeditAdminUser = adminUserRepository.findByAdminId(regeditAdminId);
         if (regeditAdminUser == null)
             throw new AdminUserNotFoundException();
@@ -242,8 +242,6 @@ public class SuperAdminService {
         }
 
         AdminUser adminUser = adminUserRepository.findByAdminId(passwordUnlockRequest.getAdminId());
-
-        log.info("regeditAdminId : " + passwordUnlockRequest.getAdminId());
 
         if (adminUser == null)
             throw new AdminUserNotFoundException();

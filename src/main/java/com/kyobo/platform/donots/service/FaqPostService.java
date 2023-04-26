@@ -103,8 +103,7 @@ public class FaqPostService {
     @Transactional
     public String uploadRepresentativeImgToS3AndUpdateUrl(Long key, MultipartFile multipartFile) throws DecoderException, IOException {
 
-        FaqPost foundFaqPost = faqPostRepository.findById(key)
-                                                .orElseThrow(() -> new DefaultException("요청된 FAQ가 없습니다."));
+        FaqPost foundFaqPost = faqPostRepository.findById(key).orElseThrow(() -> new DefaultException("요청된 FAQ가 없습니다."));
 
         String foundRepresentativeImgUrl = foundFaqPost.getRepresentativeImgUrl();
         String imageDirectoryPathAfterDomain = "faq-posts/" + key + "/";
@@ -117,8 +116,7 @@ public class FaqPostService {
     @Transactional
     public void deleteRepresentativeImgToS3AndUpdateUrl(Long key) throws DecoderException, IOException {
 
-        FaqPost foundFaqPost = faqPostRepository.findById(key)
-                                                .orElseThrow(() -> new DefaultException("요청된 FAQ가 없습니다."));
+        FaqPost foundFaqPost = faqPostRepository.findById(key).orElseThrow(() -> new DefaultException("요청된 FAQ가 없습니다."));
 
         String imageDirectoryPathAfterDomain = "faq-posts/" + key + "/";
         s3FileUploadUtil.deleteImageFromS3(foundFaqPost.getRepresentativeImgUrl(), imageDirectoryPathAfterDomain);

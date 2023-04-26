@@ -99,7 +99,7 @@ public class NoticeService {
         }
 
         String newNoticePostNotifResponseValue = (String) newNoticePostNotifResponse.get("databody");
-        log.info("newNoticePostNotifResponseValue: "+ newNoticePostNotifResponseValue);
+        log.info("newNoticePostNotifResponseValue: " + newNoticePostNotifResponseValue);
         if (newNoticePostNotifResponseValue == null) {
             log.info("Recipe API 처리시 오류 발생 (ResponseBody(응답받은 JSON)에 databody 속성이 없음)");
             throw new DefaultException("Recipe API 처리시 오류 발생 (newNoticePostNotifResponseValue == null)");
@@ -128,7 +128,7 @@ public class NoticeService {
 
     public NoticeResponse getNoticeDetail(Long noticePostKey) {
         NoticePost noticePost = noticePostRepository.findById(noticePostKey)
-                                                    .orElseThrow(() -> new DataNotFoundException());
+                .orElseThrow(() -> new DataNotFoundException());
         return new NoticeResponse(noticePost);
     }
 
@@ -145,7 +145,7 @@ public class NoticeService {
     @Transactional
     public void updateNotice(Long noticePostKey, NoticeRequest noticeRequest, MultipartFile multipartFile) throws DecoderException, IOException {
         NoticePost foundNoticePost = noticePostRepository.findById(noticePostKey)
-                                                         .orElseThrow(() -> new DataNotFoundException());
+                .orElseThrow(() -> new DataNotFoundException());
 
         foundNoticePost.updateNotice(noticeRequest.getTitle(), noticeRequest.getBody(), noticeRequest.getBoardStartDate(), noticeRequest.getBoardEndDate());
 
@@ -163,7 +163,7 @@ public class NoticeService {
         }
     }
 
-    private NoticePost noticePostRegedit(NoticeRequest noticeRequest, String adminId){
+    private NoticePost noticePostRegedit(NoticeRequest noticeRequest, String adminId) {
         LocalDateTime now = LocalDateTime.now();
         NoticePost noticePost = NoticePost.builder()
                 .title(noticeRequest.getTitle())
@@ -179,25 +179,17 @@ public class NoticeService {
 
     @Transactional
     public String uploadNoticeImageToS3AndUpdateUrl(Long key, MultipartFile multipartFile) throws DecoderException, IOException {
-
-        NoticePost foundNoticePost = noticePostRepository.findById(key)
-                                        .orElseThrow(() -> new DefaultException("요청된 공지사항이 없습니다."));
-
+        NoticePost foundNoticePost = noticePostRepository.findById(key).orElseThrow(() -> new DefaultException("요청된 공지사항이 없습니다."));
         String foundImageUrl = foundNoticePost.getImageUrl();
         String imageDirectoryPathAfterDomain = "notice-posts/" + key + "/";
         String uploadedImageUrl = s3FileUploadUtil.uploadImageToS3AndGetUrl(multipartFile, foundImageUrl, imageDirectoryPathAfterDomain);
-
-        // TODO DB에 잘 저장되는지 확인 필요
         foundNoticePost.updateImageUrl(uploadedImageUrl);
         return uploadedImageUrl;
     }
 
     @Transactional
     public void deleteNoticeImageFromS3AndUpdateUrl(Long key) throws DecoderException, IOException {
-
-        NoticePost foundNoticePost = noticePostRepository.findById(key)
-                                        .orElseThrow(() -> new DefaultException("요청된 공지사항이 없습니다."));
-
+        NoticePost foundNoticePost = noticePostRepository.findById(key).orElseThrow(() -> new DefaultException("요청된 공지사항이 없습니다."));
         String imageDirectoryPathAfterDomain = "notice-posts/" + key + "/";
         s3FileUploadUtil.deleteImageFromS3(foundNoticePost.getImageUrl(), imageDirectoryPathAfterDomain);
         foundNoticePost.updateImageUrl("");

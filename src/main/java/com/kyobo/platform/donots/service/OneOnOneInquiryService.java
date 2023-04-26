@@ -33,8 +33,7 @@ public class OneOnOneInquiryService {
     @Transactional
     public void answer(Long oneOnOneInquiryPostKey, AnswerRequest answerRequest, String adminId) throws DecoderException, IOException {
 
-        OneOnOneInquiryPost foundOneOnOneInquiryPost = oneOnOneInquiryPostRepository.findById(oneOnOneInquiryPostKey)
-                                                                                    .orElseThrow(() -> new DataNotFoundException());
+        OneOnOneInquiryPost foundOneOnOneInquiryPost = oneOnOneInquiryPostRepository.findById(oneOnOneInquiryPostKey).orElseThrow(() -> new DataNotFoundException());
 
         // TODO null 체크 해서 업데이트 해야하나?
         foundOneOnOneInquiryPost.setCategory(answerRequest.getCategory());
@@ -57,8 +56,6 @@ public class OneOnOneInquiryService {
     }
 
     public void deleteInquiryPost(Long oneOnOneInquiryPostKey) {
-
-        // FIXME 이미지 삭제
         oneOnOneInquiryPostRepository.deleteById(oneOnOneInquiryPostKey);
     }
 
@@ -79,11 +76,9 @@ public class OneOnOneInquiryService {
 
     public OneOnOneInquiryPostDetailsResponse findOneOnOneInquiryPostDetailsByKey(Long oneOnOneInquiryPostKey) {
 
-        OneOnOneInquiryPost foundOneOnOneInquiryPost = oneOnOneInquiryPostRepository.findById(oneOnOneInquiryPostKey)
-                                                                                    .orElseThrow(() -> new DataNotFoundException());
+        OneOnOneInquiryPost foundOneOnOneInquiryPost = oneOnOneInquiryPostRepository.findById(oneOnOneInquiryPostKey).orElseThrow(() -> new DataNotFoundException());
 
-        Parent foundParent = parentRepository.findById(foundOneOnOneInquiryPost.getParentKey())
-                                             .orElseThrow(() -> new DataNotFoundException());
+        Parent foundParent = parentRepository.findById(foundOneOnOneInquiryPost.getParentKey()).orElseThrow(() -> new DataNotFoundException());
 
         return new OneOnOneInquiryPostDetailsResponse(foundOneOnOneInquiryPost, foundParent.getEmail());
     }
