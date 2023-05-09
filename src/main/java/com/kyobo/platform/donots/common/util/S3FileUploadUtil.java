@@ -71,20 +71,16 @@ public class S3FileUploadUtil {
     }
 
     public String uploadImageToS3AndGetUrl(MultipartFile multipartFile, String asIsImageUrl, String imageDirectoryPathAfterDomain) throws IOException, DecoderException {
-        log.info("S3FileUploadUtil.uploadImageToS3AndGetUrl Start");
 
         // macOS에서 업로드시 생기는 자소분리현상을 해결하기 위한 로직
-        log.info("multipartFile.getOriginalFilename(): {}", multipartFile.getOriginalFilename());
         String normalizedMultipartFilename = Normalizer.normalize(multipartFile.getOriginalFilename(), Normalizer.Form.NFC);
-        log.info("normalizedMultipartFilename: {}", normalizedMultipartFilename);
 
         // 파일명, 확장자 분리 및 확장자 허용여부 확인
         String nameWithoutExtension = normalizedMultipartFilename.replaceFirst("[.][^.]+$", ""); // 파일명에서 확장자를 제거
-        log.info("nameWithoutExtension: {}", nameWithoutExtension);
+
         final String extension = normalizedMultipartFilename.substring(normalizedMultipartFilename.lastIndexOf(".")); // 확장자만 추출
-        log.info("extension: {}", extension);
+
         if (Arrays.stream(PERMITTED_UPLOAD_EXTENSIONS).noneMatch(ext -> ext.equals(extension))) {
-            log.info("허용되지 않은 확장자입니다. 허용된 확장자: " + Arrays.toString(PERMITTED_UPLOAD_EXTENSIONS));
             throw new BusinessException("허용되지 않은 확장자입니다. 허용된 확장자: " + Arrays.toString(PERMITTED_UPLOAD_EXTENSIONS));
         }
 
@@ -92,17 +88,14 @@ public class S3FileUploadUtil {
         LocalDateTime now = LocalDateTime.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS");
         String toBeFileNameCurrentDateTimeAppended = nameWithoutExtension + "_" + now.format(formatter) + extension;
-        log.info("File Name to upload: {}", toBeFileNameCurrentDateTimeAppended);
 
         // S3에 업로드할 파일URL을 파일명만 URL인코딩한다
         String encodedToBeProfilePictureUrl = buildFullUrlWithEncodedFileName(distributionDomain, imageDirectoryPathAfterDomain, toBeFileNameCurrentDateTimeAppended);
         if (!isUrlLengthAvailable(encodedToBeProfilePictureUrl)) {
-            log.info("업로드 하려는 파일명이 너무 깁니다");
             throw new BusinessException("업로드 하려는 파일명이 너무 깁니다");
         }
 
         File toBeFile = convertMultipartFileToFileWithCustomName(multipartFile, toBeFileNameCurrentDateTimeAppended);
-        log.info("toBeFile.getName(): {}", toBeFile.getName());
 
         if (!StringUtils.isBlank(asIsImageUrl)) {
             String[] slashSplittedAsIsImageUrl = asIsImageUrl.split("/");
@@ -119,7 +112,6 @@ public class S3FileUploadUtil {
         // 업로드 후 메모리에 있는 이미지파일 삭제
         toBeFile.delete();
 
-        log.info("S3FileUploadUtil.uploadImageToS3AndGetUrl End");
         return encodedToBeProfilePictureUrl;
     }
 
@@ -174,23 +166,5 @@ public class S3FileUploadUtil {
         fos.write(multipartFile.getBytes());
         fos.close();
         return fileWrittenFromMultipartFile;
-    }
-
-    private static File compressImageFile(MultipartFile multipartFile, String imageFileName, String fileExt) throws IOException {
-        File imageFile = new File(imageFileName);
-        OutputStream os = new FileOutputStream(imageFile);
-
-        Iterator<ImageWriter> writers = ImageIO.getImageWritersByFormatName(fileExt);
-        ImageWriter writer = (ImageWriter) writers.next();
-
-        ImageOutputStream ios = ImageIO.createImageOutputStream(os);
-        writer.setOutput(ios);
-        BufferedImage bufferedImage = ImageIO.read(multipartFile.getInputStream());
-        writer.write(new IIOImage(bufferedImage, null, null));
-
-        os.close();
-        ios.close();
-        writer.dispose();
-        return imageFile;
     }
 }

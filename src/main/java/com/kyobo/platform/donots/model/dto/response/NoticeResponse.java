@@ -59,8 +59,7 @@ public class NoticeResponse {
         this.boardStartDate = noticePost.getBoardStartDate();
         this.boardEndDate = noticePost.getBoardEndDate();
 
-        LocalDateTime now = LocalDateTime.now();
-        if (noticePost.getCreatedDate().plusDays(7).isAfter(now))
+        if (noticePost.getCreatedDate().plusDays(7).isAfter(LocalDateTime.now()))
             this.isNewPost = true;
         else
             this.isNewPost = false;

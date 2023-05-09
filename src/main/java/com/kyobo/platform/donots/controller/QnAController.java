@@ -39,9 +39,7 @@ public class QnAController {
             @ApiResponse(responseCode = "200", description = "성공")
     })
     public ResponseEntity<?> qnAUpdate(@RequestBody @Valid QnAUpdateRequest qnAUpdateRequest, HttpServletRequest httpServletRequest)  {
-
         String adminIdFromSession = SessionUtil.getGlobalCustomSessionStringAttribute("adminId", httpServletRequest, redisTemplate);
-
         qnAService.qnAUpdate(qnAUpdateRequest, adminIdFromSession);
         return ResponseEntity.ok().build();
     }
