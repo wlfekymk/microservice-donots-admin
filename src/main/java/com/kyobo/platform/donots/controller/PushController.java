@@ -71,8 +71,6 @@ public class PushController {
         return new ResponseEntity(result, HttpStatus.OK);
     }
 
-
-
     @DeleteMapping("/v1/send/{id}")
     @Operation(summary = "push 발송 요청 삭제", description = "관리자 Push 발송 요청 삭제")
     @ApiResponses(value = {
