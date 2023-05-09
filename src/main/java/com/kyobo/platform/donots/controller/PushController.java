@@ -3,8 +3,6 @@ package com.kyobo.platform.donots.controller;
 import com.kyobo.platform.donots.common.util.SessionUtil;
 import com.kyobo.platform.donots.model.dto.request.CreatePushRequest;
 import com.kyobo.platform.donots.model.dto.request.PushSendListRequest;
-import com.kyobo.platform.donots.model.dto.response.AdminUserResponse;
-import com.kyobo.platform.donots.model.dto.response.NoticeListResponse;
 import com.kyobo.platform.donots.model.dto.response.PushSendListResponse;
 import com.kyobo.platform.donots.service.PushService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -40,7 +38,7 @@ public class PushController {
 
     private final RedisTemplate<String, Object> redisTemplate;
 
-    @PostMapping("/v1/push/send")
+    @PostMapping("/v1/send")
     @Operation(summary = "push 발송 요청 생성", description = "관리자 Push 발송 스케줄 요청")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "성공")
@@ -59,7 +57,7 @@ public class PushController {
         return ResponseEntity.created(location).build();
     }
 
-    @GetMapping("/v1/push/send")
+    @GetMapping("/v1/send")
     @Operation(summary = "push 발송 요청 List 보기 ", description = "관리자 Push 발송 요청 내역 보기")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "성공",
@@ -75,7 +73,7 @@ public class PushController {
 
 
 
-    @DeleteMapping("/v1/push/send/{id}")
+    @DeleteMapping("/v1/send/{id}")
     @Operation(summary = "push 발송 요청 삭제", description = "관리자 Push 발송 요청 삭제")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "성공")
@@ -88,7 +86,7 @@ public class PushController {
         return ResponseEntity.ok().build();
     }
 
-    @PutMapping("/v1/push/send")
+    @PutMapping("/v1/send")
     @Operation(summary = "push 발송 요청 수정", description = "관리자 Push 발송 요청 수정")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "성공")
